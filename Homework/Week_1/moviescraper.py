@@ -49,7 +49,7 @@ def extract_movies(dom):
         actors = ','.join(map(str, actors))
 
         # Append all scraped data to the list seperated by commas
-        movies.append([title, rating, year, actors, runtime])
+        movies.append([title, float(rating), int(year), actors, int(runtime)])
 
     return movies
 
