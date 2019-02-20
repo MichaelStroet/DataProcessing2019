@@ -137,7 +137,7 @@ def plot_infant(data, figure):
     Visualises the infant mortality data
     '''
 
-    plt.figure(figure, figsize = (6, 5))
+    plt.figure(figure, figsize = (8, 7))
 
     plt.boxplot(data)
 
@@ -146,6 +146,52 @@ def plot_infant(data, figure):
 
     plt.ylabel("Deaths per 1000 births")
     plt.title(f"Infant mortality in {len(data)} countries")
+
+
+def scatterplot_GDP_infant(xdata, ydata, region, colour):
+    '''
+    Plots a scatterplot with the GDP data and the Infant mortality data
+    '''
+
+    plt.scatter(xdata, ydata, color = colour, label = region)
+
+    plt.title("GDP per capita and infant mortality in different regions of the world")
+    plt.xlabel("GDP per capita ($)")
+    plt.ylabel("Infant deaths per 1000 births")
+
+    plt.xlim(0)
+    plt.ylim(0)
+
+    plt.grid(axis = "both")
+    plt.legend(loc = "upper right")
+
+
+def bonus_scatter(df):
+    '''
+    Creates a scatterplot of GDP per capita and infant mortality, giving each region a different colour
+    '''
+    # Remove suriname from the dataframe
+    df = df.drop("Suriname")
+
+    # Create a list of all (11) unique regions
+    regions = df["Region"].unique()
+
+    #Create a list of 11 contrasting colours
+    colours = ["red", "brown", "orange", "olive", "yellow", "lime", "darkgreen", "cyan", "navy", "purple", "magenta"]
+
+    # Plots a scatterplot with the GDP data and the Infant mortality data with each region a different colour
+    plt.figure("Scatter GDP per capita-Infant mortality", figsize = (8, 7))
+
+    for region, colour in zip(regions, colours):
+        # Create a new dataframe with all countries from a specific region
+        regional_df = df[df["Region"] == region]
+
+        # Create lists of the GDP and infant mortality data
+        regional_GDP_data = regional_df[WANTED_DATA[4]].tolist()
+        regional_infant_data = regional_df[WANTED_DATA[3]].tolist()
+
+        # Plot a scatterplot of a specific region with its own colour
+        scatterplot_GDP_infant(regional_GDP_data, regional_infant_data, region, colour)
 
 
 if __name__ == "__main__":
@@ -189,5 +235,12 @@ if __name__ == "__main__":
 
     # Visualise the infant mortality data
     plot_infant(infant_data, "Infant mortality")
+
+
+    " Bonus -------------------------------------------------------------------"
+
+    bonus_scatter(data_df)
+
+    " -------------------------------------------------------------------------"
 
     plt.show()

@@ -1,0 +1,12 @@
+Central tendency of the GDP per capita data
+Mean     : $11517.117117117117
+Mode     : $800.0
+Median   : $5700.0
+Std. dev.: $28071.741878691257
+
+Five Number Summary of the infant mortality (in deaths per 1000 births) data
+Minimum       : 2.29
+First quartile: 8.15
+Median        : 21.0
+Third quartile: 55.705
+Maximum       : 191.19
