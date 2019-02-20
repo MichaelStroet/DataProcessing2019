@@ -48,7 +48,7 @@ def plot_results(years, ratings):
     ax = axs[0]
     plot_subplot(years, rating, ax, 0, 10)
 
-    # Rightenr subplot with ratings from 8 to 9
+    # Rightern subplot with ratings from 8 to 9
     ax = axs[1]
     plot_subplot(years, rating, ax, 8, 9)
 
