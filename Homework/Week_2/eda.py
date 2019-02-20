@@ -148,19 +148,19 @@ def plot_infant(data, figure):
     plt.title(f"Infant mortality in {len(data)} countries")
 
 
-def scatterplot_GDP_infant(xdata, ydata, region, colour):
+def scatterplot_GDP_infant(x_data, y_data, region, colour, x_max, y_max):
     '''
     Plots a scatterplot with the GDP data and the Infant mortality data
     '''
 
-    plt.scatter(xdata, ydata, color = colour, label = region)
+    plt.scatter(x_data, y_data, color = colour, label = region)
 
     plt.title("GDP per capita and infant mortality in different regions of the world")
     plt.xlabel("GDP per capita ($)")
     plt.ylabel("Infant deaths per 1000 births")
 
-    plt.xlim(0)
-    plt.ylim(0)
+    plt.xlim(0, x_max * 1.03)
+    plt.ylim(0, y_max * 1.03)
 
     plt.grid(axis = "both")
     plt.legend(loc = "upper right")
@@ -172,6 +172,10 @@ def bonus_scatter(df):
     '''
     # Remove suriname from the dataframe
     df = df.drop("Suriname")
+
+    # Get the maximum values of the GDP per capit and infant mortality data
+    GDP_max = df[WANTED_DATA[4]].describe()["max"]
+    infant_max = df[WANTED_DATA[3]].describe()["max"]
 
     # Create a list of all (11) unique regions
     regions = df["Region"].unique()
@@ -191,7 +195,7 @@ def bonus_scatter(df):
         regional_infant_data = regional_df[WANTED_DATA[3]].tolist()
 
         # Plot a scatterplot of a specific region with its own colour
-        scatterplot_GDP_infant(regional_GDP_data, regional_infant_data, region, colour)
+        scatterplot_GDP_infant(regional_GDP_data, regional_infant_data, region, colour, GDP_max, infant_max)
 
 
 if __name__ == "__main__":
