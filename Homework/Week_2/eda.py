@@ -236,9 +236,9 @@ if __name__ == "__main__":
     # Visualise the infant mortality data
     plot_infant(infant_data, "Infant mortality")
 
-
     " Bonus -------------------------------------------------------------------"
 
+    # Create a scatterplot with Gdp per capita and infant mortality comparing different regions
     bonus_scatter(data_df)
 
     " -------------------------------------------------------------------------"
