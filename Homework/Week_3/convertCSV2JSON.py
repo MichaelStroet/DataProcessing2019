@@ -7,18 +7,20 @@ This script converts a csv file to a JSON file
 
 import csv
 import json
+import time
+import numpy as np
 import pandas as pd
 
-INPUT_CSV = "KNMI_20190221.csv"
-OUTPUT_JSON = "KNMI_test.json"
+INPUT_CSV = "Zonnepanelen.csv"
+OUTPUT_JSON = "data.json"
 
-WANTED_DATA = ["YYYYMMDD","   TN","   TX"]
+#WANTED_DATA = []
 
 def open_csv():
     '''
     Opens a csv file and returns a pandas dataframe
     '''
-    df = pd.read_csv(INPUT_CSV, dtype = object, usecols = WANTED_DATA)
+    df = pd.read_csv(INPUT_CSV, dtype = object)#, usecols = WANTED_DATA)
 
     return(df)
 
@@ -34,38 +36,60 @@ def save_json(df):
         outfile.write(data_json)
 
 
+def date_to_unix(date, format):
+    '''
+    Converts a date in a given format to a unix timestamp.
+    '''
+    return(time.mktime(time.strptime(date, format)))
+
+
 def preprocess_data(df):
     '''
     Sanitises the data in the dataframe object
     '''
-
-    # Remove all leading and trailing spaces from the headers and columns
+    # Remove all leading and trailing spaces from the column headers
     df.columns = df.columns.str.strip(" ")
-    for col in df.columns:
-        df.loc[:, col] = df.loc[:, col].str.strip(" ")
 
     # Renames columns in the dataframe
-    col_rename_dict = {'YYYYMMDD' : 'Date', 'TN' : 'Tmin (C)', 'TX' : 'Tmax (C)'}
+    col_rename_dict = {"Generation (kWh)": "Generation" ,"Income (€)" : "Income"}
     df.rename(columns = col_rename_dict, inplace = True)
 
-    # Sets the 'Date' column as the index for the dataframe
+    # Replace all dates with unix timestamps
+    column = df.columns[0]
+    date_format = '%Y%m%d'
+
+    for row in df.index.values:
+        df.loc[row, column] = date_to_unix(df.loc[row, column], date_format)
+
+    # Sets the first column as the index for the dataframe
     df.set_index(df.columns[0], inplace=True)
 
-    df["Tmin (C)"] = df["Tmin (C)"].multiply(10)
+    # Sanitises all numeric columns
+    for col in df.columns:     # Add a way to only select numeric-like columns
+
+        # Remove all leading and trailing spaces from the columns
+        df.loc[:, col] = df.loc[:, col].str.strip(" ")
+
+        # Replaces all ',' with '.'
+        df.loc[:, col] = df.loc[:, col].str.replace(",", ".")
+
+        # Replaces all data not containing any numeric values [0-9], '.' or a '-' with numpy's NaN
+        missing_data = df.loc[:, col].str.contains(r'[^\d.-]')
+        df.loc[:, col] = np.where(missing_data, np.nan, df.loc[:, col])
+
+        # Converts all strings to floats
+        df.loc[:, col] = pd.to_numeric(df.loc[:, col])
 
     return(df)
 
+
 if __name__ == "__main__":
 
+    # Open the csv and convert it to a pandas dataframe object
     data_df = open_csv()
-    print(data_df.head(2))
-    print()
 
     # Sanitise the dataframe
     data_df = preprocess_data(data_df)
-
-    print(data_df.head(2))
-    print()
 
     # Save the data as a json file
     save_json(data_df)
