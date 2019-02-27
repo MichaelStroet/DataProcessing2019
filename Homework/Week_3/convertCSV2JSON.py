@@ -2,7 +2,7 @@
 # Name: Michael Stroet
 # Student number: 11293284
 """
-This script converts a csv file to a JSON file
+This script converts a csv file into a JSON file
 """
 
 import csv
@@ -14,13 +14,12 @@ import pandas as pd
 INPUT_CSV = "Zonnepanelen.csv"
 OUTPUT_JSON = "data.json"
 
-#WANTED_DATA = []
 
 def open_csv():
     '''
     Opens a csv file and returns a pandas dataframe
     '''
-    df = pd.read_csv(INPUT_CSV, dtype = object)#, usecols = WANTED_DATA)
+    df = pd.read_csv(INPUT_CSV, dtype = object)
 
     return(df)
 
@@ -64,8 +63,8 @@ def preprocess_data(df):
     # Sets the first column as the index for the dataframe
     df.set_index(df.columns[0], inplace=True)
 
-    # Sanitises all numeric columns
-    for col in df.columns:     # Add a way to only select numeric-like columns
+    # Sanitises the remaining (numeric) columns
+    for col in df.columns:
 
         # Remove all leading and trailing spaces from the columns
         df.loc[:, col] = df.loc[:, col].str.strip(" ")

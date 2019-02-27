@@ -90,7 +90,7 @@ function lineGraph(data, yData) {
   c.font = 'italic 16pt sans-serif';
   c.textAlign = "center";
 
-  c.fillText("Power generation of personal solarpanels", (canvas.width + xPadding) / 2, yPadding / 2)
+  c.fillText("Stroomopwekking van eigen zonepanelen", (canvas.width + xPadding) / 2, yPadding / 2)
 
   // Properties for drawing the x-axis values
   c.font = 'italic 8pt sans-serif';
@@ -116,7 +116,7 @@ function lineGraph(data, yData) {
 
   // Draw x-axis label
   c.font = 'italic 10pt sans-serif';
-  c.fillText("Time", canvas.width - 20, canvas.height - (yPadding / 2.0))
+  c.fillText("Tijd", canvas.width - 20, canvas.height - (yPadding / 2.0))
 
 
   // Properties for drawing the y-axis values
@@ -139,7 +139,7 @@ function lineGraph(data, yData) {
   c.font = 'italic 10pt sans-serif';
   c.rotate(-Math.PI / 2)
 
-  c.fillText("Generation (kWh)", -20, (xPadding / 3.5))
+  c.fillText("Opbrengst (kWh)", -20, (xPadding / 3.5))
   c.restore()
 
 
