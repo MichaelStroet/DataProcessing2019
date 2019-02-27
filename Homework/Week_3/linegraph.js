@@ -13,8 +13,11 @@ txtFile.send();
 
 
 function timeConverter(timestamp){
+  /*
+  Converts a UNIX timestamp to a day and month value and returns them as an object
+  */
   var time = new Date(timestamp * 1000);
-  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var months = ['Jan','Feb','Maa','Apr','Mei','Jun','Jul','Aug','Sep','Okt','Nov','Dec'];
   var month = months[time.getMonth()];
   var day = time.getDate();
 
@@ -37,7 +40,6 @@ function lineGraph(data, yData) {
     Determines the largest Y value in the data object
     and returns a slightly larger number
     */
-
     var max = 0;
 
     for(var i = 0; i < dataLength; i++) {
@@ -45,7 +47,6 @@ function lineGraph(data, yData) {
             max = Object.values(data)[i][yData];
         }
     }
-
     return max * 1.2;
   }
 
