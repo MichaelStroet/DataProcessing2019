@@ -72,30 +72,33 @@ function lineGraph(data, yData) {
   // Padding around the graph
   var xPadding = 50;
   var yPadding = 30;
+  var titlePadding = 20;
 
   // Total amount of data points
   var dataLength = Object.keys(data).length
+
+  // temporary canvas border
+  c.lineWidth = 1;
+  c.strokeStyle = '#ccc';
+  c.rect(0, 0, canvas.width, canvas.height)
+  c.stroke();
 
   // Draw axes
   c.lineWidth = 2;
   c.strokeStyle = '#000';
 
   c.beginPath();
-  c.moveTo(xPadding, yPadding);
+  c.moveTo(xPadding, 0);
   c.lineTo(xPadding, canvas.height - yPadding);
   c.lineTo(canvas.width, canvas.height - yPadding);
   c.stroke();
 
-  // Draw title
-  c.font = 'italic 16pt sans-serif';
-  c.textAlign = "center";
 
-  c.fillText("Power generation of personal solarpanels", (canvas.width + xPadding) / 2, yPadding / 2)
-
-  // Properties for drawing the x-axis values
-  c.font = 'italic 8pt sans-serif';
+  // Draw x-axis values
   c.lineWidth = 1;
   c.strokeStyle = '#bbb';
+  c.font = 'italic 8pt sans-serif';
+  c.textAlign = "center";
 
   // Draw the date of the first data point
   time = timeConverter(Object.keys(data)[0])
@@ -109,18 +112,15 @@ function lineGraph(data, yData) {
         c.fillText(time.day + ' ' + time.month, xValue, canvas.height - yPadding + 20)
         c.beginPath();
         c.moveTo(xValue, canvas.height - yPadding);
-        c.lineTo(xValue, yPadding);
+        c.lineTo(xValue, 0);
         c.stroke();
       };
   }
 
-  // Draw x-axis label
-  c.font = 'italic 10pt sans-serif';
   c.fillText("Time", canvas.width - 20, canvas.height - (yPadding / 2.0))
 
 
-  // Properties for drawing the y-axis values
-  c.font = 'italic 8pt sans-serif';
+  // Draw y-axis values
   c.textAlign = "right"
   c.textBaseline = "middle";
 
@@ -134,11 +134,9 @@ function lineGraph(data, yData) {
     c.stroke();
   }
 
-  // Draw y-axis label
   c.save()
-  c.font = 'italic 10pt sans-serif';
   c.rotate(-Math.PI / 2)
-
+  console.log(xPadding / 4.0)
   c.fillText("Generation (kWh)", -20, (xPadding / 3.5))
   c.restore()
 
