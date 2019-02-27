@@ -91,7 +91,7 @@ function lineGraph(data, yData) {
   c.font = 'italic 16pt sans-serif';
   c.textAlign = "center";
 
-  c.fillText("Stroomopwekking van eigen zonepanelen", (canvas.width + xPadding) / 2, yPadding / 2)
+  c.fillText("Stroomopwekking van eigen zonnepanelen", (canvas.width + xPadding) / 2, yPadding / 2)
 
   // Properties for drawing the x-axis values
   c.font = 'italic 8pt sans-serif';
