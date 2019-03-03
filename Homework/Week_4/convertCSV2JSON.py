@@ -34,7 +34,7 @@ def save_json(df):
     Output a JSON file containing all data ordered by index.
     '''
     # Convert the dataframe to a json string ordered by index
-    data_json = df.to_json(orient = 'index')
+    data_json = df.to_json(orient = 'values')
 
     with open(OUTPUT_JSON, 'w') as outfile:
         outfile.write(data_json)
