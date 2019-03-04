@@ -4,80 +4,25 @@
 
   <head>
     <meta charset="utf-8">
-    <script type="text/javascript" src="d3/d3.v5.js"></script>
+    <script type="text/javascript" src="d3/d3.v5.min.js"></script>
+    <script type="text/javascript" src="barchart.js"></script>
+
   </head>
 
   <body>
+    <h1>DataProcessing2019 - Barchart</h1>
+    <h4>Michael Stroet 11293284</h4>
+    <p>Steam heeft games. Games kan je spelen met windows, mac of linux. Maar niet elke game ondersteunt ze alle drie. ZIE HIER!</p>
 
-    <script type="text/javascript">
+    <style>
+  	.bar {
+  	  fill: steelblue;
+  	}
 
-      d3.select("head")
-        .append("title")
-        .text("Barchart");
-
-      var body = d3.select("body");
-
-        body
-        .append("h1")
-        .text("DataProcessing2019 - Barchart");
-        body
-        .append("h4")
-        .text("Michael Stroet 11293284");
-        body
-        .append("p")
-        .text("Steam heeft games. Games kan je spelen met windows, mac of linux. Maar niet elke game ondersteunt ze alle drie. ZIE HIER!");
-        /*
-      d3.json("data.json").then(function(dataset) {
-        d3.select("body").data(dataset)
-          .enter()
-          .append("p")
-          .text(function(d) {
-              return "Oh, this dataset contains " + d[0] + ". Cool!";
-          })
-          .style("color", function(d) {
-            if (d[3] == true) {   //Supports Mac
-                return "green";
-            } else if (d[4] == true) {   //Supports linux
-                return "blue";
-            }
-          });
-      });*/
-
-
-
-      d3.json("data.json").then(function(data) {
-        barChart(data)
-        });
-
-      function barChart(dataset) {
-        var svgWidth = 500;
-        var svgHeight = 100;
-
-        var svg = d3.select("body")
-                .append("svg")
-                .attr("width", svgWidth)
-                .attr("height", svgHeight);
-
-        var dataset = [13000, 5000, 4500];
-        var barWidth = svgWidth / (2 * dataset.length);
-        var barHeight = svgHeight;
-
-        var bars = svg.selectAll("rect")
-          .data(dataset)
-          .enter()
-          .append("rect")
-          .attr("x", function(d, i) {
-            return i*25 + i*barWidth;
-          })
-          .attr("y", function(d, i) {
-            return d / barHeight;
-          })
-          .attr("width", barWidth)
-          .attr("height", barHeight);
-
-      };
-
-    </script>
+  	.bar:hover {
+  	  fill: brown;
+  	}
+    </style>
 
   </body>
 
