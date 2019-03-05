@@ -15,7 +15,7 @@ import pandas as pd
 INPUT_CSV = "games-features.csv"    # Source: https://data.world/craigkelly/steam-game-data
 OUTPUT_JSON = "data.json"
 
-WANTED_DATA = ["ResponseName","ReleaseDate","PlatformWindows","PlatformLinux","PlatformMac","GenreIsNonGame"]
+WANTED_DATA = ["PlatformWindows","PlatformLinux","PlatformMac","GenreIsNonGame"]
 # "PlatformWindows","PlatformLinux","PlatformMac",
 #"GenreIsNonGame","GenreIsIndie","GenreIsAction","GenreIsAdventure","GenreIsCasual","GenreIsStrategy","GenreIsRPG","GenreIsSimulation","GenreIsEarlyAccess","GenreIsFreeToPlay","GenreIsSports","GenreIsRacing","GenreIsMassivelyMultiplayer"]
 
@@ -26,6 +26,7 @@ def open_csv():
     '''
     df = pd.read_csv(INPUT_CSV, usecols = WANTED_DATA)
 
+
     return(df)
 
 
@@ -33,11 +34,18 @@ def save_json(df):
     '''
     Output a JSON file containing all data ordered by index.
     '''
-    # Convert the dataframe to a json string ordered by index
+    # Convert the dataframe to a json string
     data_json = df.to_json(orient = 'values')
 
     with open(OUTPUT_JSON, 'w') as outfile:
         outfile.write(data_json)
+
+
+    data_csv = df.to_csv()
+
+    with open("data.csv", 'w') as outfile:
+        outfile.write(data_csv)
+
 
 
 def date_to_unix(date, format):
