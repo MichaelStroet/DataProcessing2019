@@ -16,16 +16,12 @@ INPUT_CSV = "games-features.csv"    # Source: https://data.world/craigkelly/stea
 OUTPUT_JSON = "data.json"
 
 WANTED_DATA = ["PlatformWindows","PlatformLinux","PlatformMac","GenreIsNonGame"]
-# "PlatformWindows","PlatformLinux","PlatformMac",
-#"GenreIsNonGame","GenreIsIndie","GenreIsAction","GenreIsAdventure","GenreIsCasual","GenreIsStrategy","GenreIsRPG","GenreIsSimulation","GenreIsEarlyAccess","GenreIsFreeToPlay","GenreIsSports","GenreIsRacing","GenreIsMassivelyMultiplayer"]
-
 
 def open_csv():
     '''
     Opens a csv file and returns a pandas dataframe
     '''
     df = pd.read_csv(INPUT_CSV, usecols = WANTED_DATA)
-
 
     return(df)
 
@@ -35,24 +31,10 @@ def save_json(df):
     Output a JSON file containing all data ordered by index.
     '''
     # Convert the dataframe to a json string
-    data_json = df.to_json(orient = 'values')
+    data_json = df.to_json(orient = "index")
 
     with open(OUTPUT_JSON, 'w') as outfile:
         outfile.write(data_json)
-
-
-    data_csv = df.to_csv()
-
-    with open("data.csv", 'w') as outfile:
-        outfile.write(data_csv)
-
-
-
-def date_to_unix(date, format):
-    '''
-    Converts a date in a given format to a unix timestamp.
-    '''
-    return(time.mktime(time.strptime(date, format)))
 
 
 def preprocess_data(df):
@@ -62,8 +44,18 @@ def preprocess_data(df):
     # Remove all leading and trailing spaces from the column headers
     df.columns = df.columns.str.strip(" ")
 
-    # Remove non-game rows
+    # Renames columns in the dataframe
+    col_rename_dict = {
+        WANTED_DATA[0] : "Windows",
+        WANTED_DATA[1] : "Linux",
+        WANTED_DATA[2] : "Mac"
+    }
+
+    df.rename(columns = col_rename_dict, inplace = True)
+
+    # Remove non-game rows and the nongame column
     df = df[df.GenreIsNonGame == False]
+    df.drop(columns = ["GenreIsNonGame"], inplace = True)
 
     return(df)
 
