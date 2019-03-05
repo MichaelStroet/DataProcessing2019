@@ -1,80 +1,127 @@
-d3.select("head")
-  .append("title")
-  .text("Barchart");
+// Name: Michael Stroet
+// Student number: 11293284
 
 d3.json("data.json").then(function(data) {
   barChart(data)
 });
 
-function barChart(dataset) {
+function barChart(data) {
 
-  var xPadding = 50;
-  var yPadding = 30;
+  var svgWidth = 700;
+  var svgHeight = 500;
+  var padding = 60;
 
-  var svgWidth = 450;
-  var svgHeight = 300;
+  var chartWidth = svgWidth - 2 * padding
+  var chartHeight = svgHeight - 2 * padding
 
-  var dataset = [13000, 5000, 4500];
+  const dataset = [
+    {
+      platform: "Windows",
+      games: 13000,
+    },
+    {
+      platform: "Mac",
+      games: 5000,
+    },
+    {
+      platform: "Linux",
+      games: 4500,
+    },
+  ];
 
-  /*var xScale = d3.scaleLinear()
-    .domain([0, dataset.length])
-    .range([xPadding, svgWidth]);
-    */
-  var xScale = d3.scaleBand()
-    .domain([0, dataset.length])
-    .range([xPadding, svgWidth])
-    .paddingInner([0.1])
-    .paddingOuter([0.3])
-    .align([0.5]);
-
-  var yScale = d3.scaleLinear()
-    .domain([0, d3.max(dataset) * 1.1])
-    .range([svgHeight - yPadding, 0]);
-
-  var svg = d3.select("body")
+  // Define a "svg" for drawing the figure
+  const svg = d3.select("body")
     .append("svg")
     .attr("width", svgWidth)
     .attr("height", svgHeight);
 
-  var xTicks = [];
-  var barWidth = svgWidth / (2 * dataset.length);
+  // Define a "g" for drawing the barchart
+  const barChart = svg.append("g")
+    .attr("class", "barchart")
+    .attr("transform", `translate(${padding}, ${padding})`);
 
-  console.log(xScale.bandwidth());
+  // Scaling function for x values
+  const xScale = d3.scaleBand()
+    .range([0, chartWidth])
+    .domain(dataset.map((s) => s.platform))
+    .padding(0.2)
 
-  var bars = svg.selectAll(".bar")
-    .data(dataset)
-    .enter()
-    .append("rect")
-    .attr("class", "bar")
-    .attr("opacity", 0.5)
-    .attr("x", function(d, i) {
-      return xScale(i);
-    })
-    .attr("y", function(d) {
-      return yScale(d);
-    })
-    .attr("width", xScale.bandwidth())
-    .attr("height", function(d) {
-      return yScale(0) - yScale(d);
-    });
+  // Scaling function for y values
+  const yScale = d3.scaleLinear()
+    .range([chartHeight, 0])
+    .domain([0, 13360]);
 
-    // Draw x-axis
-    svg.append("g")
-      .call(d3.axisBottom(xScale))
-      .attr("transform", "translate(0, " + (svgHeight - yPadding) + ")");
+  // Draw x-axis
+  barChart.append("g").call(d3.axisBottom(xScale))
+    .attr("class", "axis")
+    .attr('transform', `translate(0, ${chartHeight})`);
 
-    // Draw y-axis
-    svg.append("g")
-      .call(d3.axisLeft(yScale))
-      .attr("transform", "translate(" + xPadding +", 0)");
+  // Draw x label
+  svg.append('text')
+    .attr('class', 'label')
+    .attr('x', chartWidth / 2 + padding)
+    .attr('y', chartHeight + padding * 1.7)
+    .attr('text-anchor', 'middle')
+    .text('Platforms')
 
-    // Draw border
-    svg.append("rect")
-    .attr("x", 0)
-    .attr("y", 0)
-    .attr("height", svgHeight)
-    .attr("width", svgWidth)
-    .style("stroke", "black")
-    .style("fill", "none")
-    .style("stroke-width", 1);
+  // Draw y-axis
+  barChart.append("g").call(d3.axisLeft(yScale))
+    .attr("class", "axis");
+
+  // Draw y label
+  svg
+    .append('text')
+    .attr('class', 'label')
+    .attr('x', -(chartHeight / 2) - padding)
+    .attr('y', padding / 3.5)
+    .attr('transform', 'rotate(270)')
+    .attr('text-anchor', 'middle')
+    .text('Number of games')
+
+  // Draw title
+  svg.append('text')
+    .attr('class', 'title')
+    .attr('x', chartWidth / 2 + padding)
+    .attr('y', 40)
+    .attr('text-anchor', 'middle')
+    .text('Total supported games on Steam per platform in 2016')
+
+  // Draw horizontal gridlines
+  barChart.append('g')
+    .attr('class', 'grid')
+    .attr("opacity", 0.3)
+    .call(d3.axisLeft(yScale)
+      .tickSize(-chartWidth, 0, 0)
+      .tickFormat('')
+    );
+
+  // Draw bars
+  var bars = barChart.selectAll(".bar")
+  .data(dataset)
+  .enter()
+  .append('g')
+
+  bars
+  .append('rect')
+  .attr('class', 'bar')
+  .attr('x', (g) => xScale(g.platform))
+  .attr('y', (g) => yScale(g.games))
+  .attr('height', (g) => chartHeight - yScale(g.games))
+  .attr('width', xScale.bandwidth())
+  // Draw value of bar when mousing over it
+  .on('mouseenter', function (actual, i) {
+  bars
+    .append('text')
+    .attr('class', 'values')
+    .attr('x', xScale(actual.platform) + xScale.bandwidth() / 2)
+    .attr('y', yScale(actual.games) + 30)
+    .attr('text-anchor', 'middle')
+    .text(actual.games)
+  })
+
+  // Remove value of bar when gone
+  .on('mouseleave', function () {
+  barChart.selectAll('.values').remove()
+  })
+
 };

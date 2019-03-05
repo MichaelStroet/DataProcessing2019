@@ -1,0 +1,12 @@
+/* Name: Michael Stroet
+   Student number: 11293284 */
+
+.bar {
+  opacity: 0.9;
+  fill: royalblue;
+}
+
+.bar:hover {
+  opacity: 0.5;
+  fill: crimson;
+}
