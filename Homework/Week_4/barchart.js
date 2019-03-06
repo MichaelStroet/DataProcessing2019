@@ -30,6 +30,13 @@ function barChart(dataset) {
     .attr("class", "barchart")
     .attr("transform", `translate(${padding}, ${padding})`);
 
+    // Define the div for the tooltip
+    // http://bl.ocks.org/d3noob/a22c42db65eb00d4e369
+    const div = d3.select("body")
+      .append('div')
+      .attr('class', 'tooltip')
+      .style('opacity', 0);
+
   // Scaling function for x values
   const xScale = d3.scaleBand()
     .range([0, chartWidth])
@@ -40,13 +47,6 @@ function barChart(dataset) {
   const yScale = d3.scaleLinear()
     .range([chartHeight, 0])
     .domain([0, 13360]);
-  /*
-  var tip = d3.tip()
-    .attr("class", "d3-tip")
-    .html(function(d) {
-      return "<strong>Frequency:</strong> <span style="color:red">" + d.games + "</span>";
-    });
-    */
 
   // Draw x-axis
   barChart.append("g").call(d3.axisBottom(xScale))
@@ -91,8 +91,6 @@ function barChart(dataset) {
       .tickFormat("")
     );
 
-  //svg.call(tip);
-
   // Define "g" for each bars
   var bars = barChart.selectAll(".bar")
   .data(dataset)
@@ -106,26 +104,21 @@ function barChart(dataset) {
   .attr("y", (data => yScale(data.games)))
   .attr("height", (data => chartHeight - yScale(data.games)))
   .attr("width", xScale.bandwidth())
-  /*
-  .on("mouseover", tip.show)
-  .on("mouseout", tip.hide)
-*/
-
-
-  // Draw value of bar when mousing over it
-  .on("mouseover", function (d) {
-  bars
-    .append("text")
-    .attr("class", "value")
-    .attr("x", xScale(d.platform) + xScale.bandwidth() / 2)
-    .attr("y", yScale(d.games) + 30)
-    .attr("text-anchor", "middle")
-    .text(d.games)
-  })
-
-  // Remove value of bar when the mouse is gone
-  .on("mouseout", function () {
-  barChart.selectAll(".value").remove()
-  })
+  .on("mouseover", d => {
+      div
+        .transition()
+        .duration(200)
+        .style('opacity', 0.9);
+      div
+        .html(d.platform + '<br/>' + d.games)
+        .style("left", (d3.event.pageX) + "px")
+        .style("top", (d3.event.pageY - 28) + "px");
+    })
+  .on("mouseout", () => {
+      div
+        .transition()
+        .duration(500)
+        .style('opacity', 0);
+    });
 
 };
