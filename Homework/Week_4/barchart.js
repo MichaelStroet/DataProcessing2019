@@ -1,6 +1,7 @@
 // Name: Michael Stroet
 // Student number: 11293284
 
+// Load the json file and draw a barchart
 d3.json("games.json").then(function(dataset) {
   barChart(dataset)
 });
@@ -11,8 +12,8 @@ function barChart(dataset) {
   */
 
   // Dimensions of the figure
-  var svgWidth = 700;
-  var svgHeight = 500;
+  var svgWidth = 900;
+  var svgHeight = 600;
 
   // Dimensions for the barchart with padding on all sides
   var padding = 60;
@@ -45,7 +46,7 @@ function barChart(dataset) {
   // Scaling function for y values
   const yScale = d3.scaleLinear()
     .range([chartHeight, 0])
-    .domain([0, 13360]);
+    .domain([0, d3.max(dataset.map((data) => data.games))]);
 
   // Draw x-axis
   barChart.append("g").call(d3.axisBottom(xScale))
@@ -58,7 +59,7 @@ function barChart(dataset) {
     .attr("x", chartWidth / 2 + padding)
     .attr("y", chartHeight + padding * 1.7)
     .attr("text-anchor", "middle")
-    .text("Platforms")
+    .text("Besturingssysteem")
 
   // Draw y-axis
   barChart.append("g").call(d3.axisLeft(yScale))
@@ -71,7 +72,7 @@ function barChart(dataset) {
     .attr("y", padding / 3.5)
     .attr("transform", "rotate(270)")
     .attr("text-anchor", "middle")
-    .text("Number of games")
+    .text("Aantal games")
 
   // Draw title
   svg.append("text")
@@ -79,7 +80,7 @@ function barChart(dataset) {
     .attr("x", chartWidth / 2 + padding)
     .attr("y", 40)
     .attr("text-anchor", "middle")
-    .text("Total supported games on Steam per platform in 2016")
+    .text("Totaal aantal ondersteunde games per OS op Steam in 2017")
 
   // Draw horizontal gridlines
   barChart.append("g")
@@ -96,7 +97,7 @@ function barChart(dataset) {
   .enter()
   .append("g")
 
-  // Draw bars
+  // Draw bars with tooltips of their value when mousing over them
   bars.append("rect")
   .attr("class", "bar")
   .attr("x", (data => xScale(data.platform)))
@@ -106,10 +107,10 @@ function barChart(dataset) {
   .on("mousemove", d => {
       div
         .transition()
-        .duration(100)
+        .duration(50)
         .style('opacity', 0.9);
       div
-        .html(d.platform + '<br/>' + d.games)
+        .html(d.platform + '<br/>' + d.games + " games")
         .style("left", (d3.event.pageX + 5) + "px")
         .style("top", (d3.event.pageY - 40) + "px");
     })
