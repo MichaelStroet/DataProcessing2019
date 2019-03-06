@@ -31,7 +31,6 @@ function barChart(dataset) {
     .attr("transform", `translate(${padding}, ${padding})`);
 
     // Define the div for the tooltip
-    // http://bl.ocks.org/d3noob/a22c42db65eb00d4e369
     const div = d3.select("body")
       .append('div')
       .attr('class', 'tooltip')
@@ -104,15 +103,15 @@ function barChart(dataset) {
   .attr("y", (data => yScale(data.games)))
   .attr("height", (data => chartHeight - yScale(data.games)))
   .attr("width", xScale.bandwidth())
-  .on("mouseover", d => {
+  .on("mousemove", d => {
       div
         .transition()
-        .duration(200)
+        .duration(100)
         .style('opacity', 0.9);
       div
         .html(d.platform + '<br/>' + d.games)
-        .style("left", (d3.event.pageX) + "px")
-        .style("top", (d3.event.pageY - 28) + "px");
+        .style("left", (d3.event.pageX + 5) + "px")
+        .style("top", (d3.event.pageY - 40) + "px");
     })
   .on("mouseout", () => {
       div
