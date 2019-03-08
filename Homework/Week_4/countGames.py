@@ -57,7 +57,7 @@ def count_games(df):
 
 if __name__ == "__main__":
 
-    # Open the csv and convert it to a pandas dataframe object
+    # Open the json and convert it to a pandas dataframe object
     data_df = open_json()
 
     # Counts the games for each platform
