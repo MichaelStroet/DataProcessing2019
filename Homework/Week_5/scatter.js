@@ -38,4 +38,93 @@ window.onload = function() {
 
 function scatterPlot(datasets) {
     console.log(datasets);
+
+    // Dimensions of the figure
+    var svgWidth = 900;
+    var svgHeight = 600;
+
+    // Dimensions for the barchart with padding on all sides
+    var padding = 60;
+    var chartWidth = svgWidth - 2 * padding;
+    var chartHeight = svgHeight - 2 * padding;
+
+    // Define a "svg" for drawing the figure
+    const svg = d3.select("body").append("svg")
+        .attr("width", svgWidth)
+        .attr("height", svgHeight);
+
+    // Define a "g" for drawing the scatterplot
+    const scatter = svg.append("g")
+        .attr("class", "scatterplot")
+        .attr("transform", `translate(${padding}, ${padding})`);
+
+    // Define the div for the tooltip
+    const div = d3.select("body").append('div')
+        .attr('class', 'tooltip')
+        .style('opacity', 0);
+
+    var xDataMax = 100;
+    // Scaling function for x values
+    const xScale = d3.scaleLinear()
+        .range([0, chartWidth])
+        .domain([0, xDataMax]);
+
+    var yDataMax = 100;
+    // Scaling function for y values
+    const yScale = d3.scaleLinear()
+        .range([chartHeight, 0])
+        .domain([0, yDataMax]);
+
+    // Draw x-axis
+    scatter.append("g").call(d3.axisBottom(xScale))
+        .attr("class", "axis")
+        .attr("transform", `translate(0, ${chartHeight})`);
+
+    // Draw x label
+    svg.append("text")
+        .attr("class", "label")
+        .attr("x", chartWidth / 2 + padding)
+        .attr("y", chartHeight + padding * 1.7)
+        .attr("text-anchor", "middle")
+        .text("x data");
+
+    // Draw y-axis
+    scatter.append("g").call(d3.axisLeft(yScale))
+        .attr("class", "axis");
+
+    // Draw y label
+    svg.append("text")
+        .attr("class", "label")
+        .attr("x", - (chartHeight / 2) - padding)
+        .attr("y", padding / 3.5)
+        .attr("transform", "rotate(270)")
+        .attr("text-anchor", "middle")
+        .text("y data");
+
+    // Draw title
+    svg.append("text")
+        .attr("class", "title")
+        .attr("x", chartWidth / 2 + padding)
+        .attr("y", 40)
+        .attr("text-anchor", "middle")
+        .text("titel");
+
+    // Draw horizontal gridlines
+    scatter.append("g")
+        .attr("class", "grid")
+        .attr("opacity", 0.3)
+        .call(d3.axisLeft(yScale)
+            .tickSize(-chartWidth, 0, 0)
+            .tickFormat("")
+        );
+
+    // Draw vertical gridlines
+    scatter.append("g")
+        .attr("class", "grid")
+        .attr("opacity", 0.3)
+        .call(d3.axisBottom(xScale)
+            .tickSize(chartHeight, 0, 0)
+            .tickFormat("")
+        );
+
 };
