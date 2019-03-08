@@ -37,7 +37,23 @@ window.onload = function() {
  */
 
 function scatterPlot(datasets) {
-    console.log(datasets);
+
+    // List for an axis label for each dataset
+    var labelList = [
+        "Inkomend toerisme (miljoenen)",
+        "Koopkrachtpariteit (US$)",
+        "Bruto binnenlands product (miljarden US$)"
+    ];
+    // List for reducing the length of tick labels
+    var axisTicksScaling = [
+        1e+9,
+        1,
+        1e+12
+    ];
+
+    // Define x- and y-axis datasets
+    var xDataIndex = 0;
+    var yDataIndex = 2;
 
     // Dimensions of the figure
     var svgWidth = 900;
@@ -63,17 +79,21 @@ function scatterPlot(datasets) {
         .attr('class', 'tooltip')
         .style('opacity', 0);
 
-    var xDataMax = 100;
+    // Determine the maximum value of dataset x
+    var xDataMax = maxDatapoint(datasets[xDataIndex]);
+
     // Scaling function for x values
     const xScale = d3.scaleLinear()
         .range([0, chartWidth])
-        .domain([0, xDataMax]);
+        .domain([0, xDataMax * 1.05]);
 
-    var yDataMax = 100;
+    // Determine the maximum value of dataset y
+    var yDataMax = maxDatapoint(datasets[yDataIndex]);
+
     // Scaling function for y values
     const yScale = d3.scaleLinear()
         .range([chartHeight, 0])
-        .domain([0, yDataMax]);
+        .domain([0, yDataMax * 1.05]);
 
     // Draw x-axis
     scatter.append("g").call(d3.axisBottom(xScale))
@@ -86,7 +106,16 @@ function scatterPlot(datasets) {
         .attr("x", chartWidth / 2 + padding)
         .attr("y", chartHeight + padding * 1.7)
         .attr("text-anchor", "middle")
-        .text("x data");
+        .text(`${labelList[xDataIndex]}`);
+
+    // Draw vertical gridlines
+    scatter.append("g")
+        .attr("class", "grid")
+        .attr("opacity", 0.3)
+        .call(d3.axisBottom(xScale)
+            .tickSize(chartHeight, 0, 0)
+            .tickFormat("")
+        );
 
     // Draw y-axis
     scatter.append("g").call(d3.axisLeft(yScale))
@@ -99,7 +128,7 @@ function scatterPlot(datasets) {
         .attr("y", padding / 3.5)
         .attr("transform", "rotate(270)")
         .attr("text-anchor", "middle")
-        .text("y data");
+        .text(`${labelList[yDataIndex]}`);
 
     // Draw title
     svg.append("text")
@@ -118,13 +147,25 @@ function scatterPlot(datasets) {
             .tickFormat("")
         );
 
-    // Draw vertical gridlines
-    scatter.append("g")
-        .attr("class", "grid")
-        .attr("opacity", 0.3)
-        .call(d3.axisBottom(xScale)
-            .tickSize(chartHeight, 0, 0)
-            .tickFormat("")
-        );
+};
 
+
+/*
+ * Determines the maximum datapoint of a given dataset
+ */
+
+function maxDatapoint(dataset) {
+
+    // Reduce the data set to an array of arrays
+    data = Object.values(dataset);
+
+    // Determine the maximum value in the data
+    var maxData = d3.max(data, function(country) {
+        return d3.max(country, function(years) {
+            return years.Datapoint;
+        });
+
+    });
+
+    return maxData;
 };
