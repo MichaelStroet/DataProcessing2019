@@ -89,7 +89,7 @@ function barChart(dataset) {
       .tickFormat("")
     );
 
-  // Define "g" for each bars
+  // Define a "g" for each bar
   var bars = barChart.selectAll(".bar")
   .data(dataset)
   .enter()

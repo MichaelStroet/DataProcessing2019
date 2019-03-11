@@ -38,23 +38,6 @@ window.onload = function() {
 
 function scatterPlot(datasets) {
 
-    // List for an axis label for each dataset
-    var labelList = [
-        "Inkomend toerisme (miljoenen)",
-        "Koopkrachtpariteit (US$)",
-        "Bruto binnenlands product (miljarden US$)"
-    ];
-    // List for reducing the length of tick labels
-    var axisTicksScaling = [
-        1e+9,
-        1,
-        1e+12
-    ];
-
-    // Define x- and y-axis datasets
-    var xDataIndex = 0;
-    var yDataIndex = 2;
-
     // Dimensions of the figure
     var svgWidth = 900;
     var svgHeight = 600;
@@ -78,6 +61,23 @@ function scatterPlot(datasets) {
     const div = d3.select("body").append('div')
         .attr('class', 'tooltip')
         .style('opacity', 0);
+
+    // List for an axis label for each dataset
+    var labelList = [
+        "Inkomend toerisme (miljoenen)",
+        "Koopkrachtpariteit (US$)",
+        "Bruto binnenlands product (miljarden US$)"
+    ];
+    // List for reducing the length of tick labels
+    var axisTicksScaling = [
+        1e+9,
+        1,
+        1e+12
+    ];
+
+    // Define x- and y-axis datasets
+    var xDataIndex = 0;
+    var yDataIndex = 1;
 
     // Determine the maximum value of dataset x
     var xDataMax = maxDatapoint(datasets[xDataIndex]);
@@ -146,6 +146,90 @@ function scatterPlot(datasets) {
             .tickSize(-chartWidth, 0, 0)
             .tickFormat("")
         );
+
+    tourism = datasets[0];
+    ppp = datasets[1];
+
+    var tourismCountries = Object.keys(tourism);
+    var data = [];
+    var years = ["2009","2010","2011","2012","2013","2014","2015","2016","2017"];
+    console.log(years);
+
+    // tourismCountries.forEach(function(country) {
+    //     let countryIndex = tourismCountries.indexOf(country);
+    //     console.log(country);
+    //     console.log(tourism[country]);
+    //     years.forEach(function(year) {
+    //         let yearIndex = years.indexOf(year);
+    //         let xValue = tourism[tourismCountries[countryIndex]][yearIndex];
+    //         let yValue = ppp[tourismCountries[countryIndex]][yearIndex];
+    //         console.log(xValue, yValue);
+    //         console.log("NEXT");
+    //         data.push([xValue, yValue]);
+    //     });
+    // });
+    years.forEach(function(year) {
+        let yearIndex = years.indexOf(year);
+        let xValue = tourism[tourismCountries[0]][yearIndex].Datapoint;
+        let yValue = ppp[tourismCountries[0]][yearIndex].Datapoint;
+        data.push([xValue, yValue]);
+    });
+    console.log(data);
+
+    // Define a "g" for each point
+    var points = scatter.selectAll(".point")
+    .data(data)
+    .enter()
+    .append("g");
+
+    // Draw bars with tooltips of their value when mousing over them
+    points.append("circle")
+    .attr("class", "point")
+    .attr("cx", function(point) {
+         return xScale(point[0]);
+    })
+    .attr("cy", function(point) {
+         return yScale(point[1]);
+    })
+    .attr("r", 5);
+
+/////////////////////////////////////////////////////////////////////////////////
+    /*
+     * Maken van data lijst met elementen dictionary van dataset waarden
+     * data = [ {tourism : 2342342, ppp : 23456, gdp: 2345634},
+     *          {tourism : 234234,  ppp : 156,   gdp: Null},
+     *          {tourism : Null, ppp : 1346,  gdp: 4234213}
+     *          ]
+     *
+     * Eventueel land en jaar toevoegen? => mogelijkheid landen / jaren te isoleren
+     */
+
+     // Lijst van landen in alle 3 datasets
+     // Lijst van alle jaren (2009 - 2017)
+
+     // Maak lege lijst aan voor data
+
+     // Loopen over alle landen in de landen Lijst
+
+        // Loopen over elk jaar
+
+            // Maak lege dict aan
+            // Voeg eventueel land en jaar toe aan dic
+
+            // Als tourism een waarde bij dit land en jaar heeft
+                // Voeg {tourism : datapunt} toe aan dict
+            // Anders voeg Null waarde toe
+
+            // Als ppp een waarde bij dit land en jaar heeft
+                // Voeg {ppp : datapunt} toe aan dict
+            // Anders voeg Null waarde toe
+
+            // Als gdp een waarde bij dit land en jaar heeft
+                // Voeg {gdp : datapunt} toe aan dict
+            // Anders voeg Null waarde toe
+
+            // Als dict minimaal 2 non-Null waardes heeft
+                // Voeg dict toe aan data lijst
 
 };
 
