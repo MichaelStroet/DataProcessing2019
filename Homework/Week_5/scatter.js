@@ -8,28 +8,144 @@
 window.onload = function() {
 
     // Call OECD API for three datasets
-    const tourismInbound = "https://stats.oecd.org/SDMX-JSON/data/TOURISM_INBOUND/AUS+AUT+BEL+BEL-BRU+BEL-VLG+BEL-WAL+CAN+CHL+CZE+DNK+EST+FIN+FRA+DEU+GRC+HUN+ISL+IRL+ISR+ITA+JPN+KOR+LVA+LTU+LUX+MEX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+SWE+CHE+TUR+GBR+USA+NMEC+ARG+BRA+BGR+CHN+COL+CRI+HRV+EGY+MKD+IND+IDN+MLT+MAR+PER+PHL+ROU+RUS+ZAF.INB_ARRIVALS_TOTAL/all?startTime=2009&endTime=2017";
-    const purchasingPowerParities = "https://stats.oecd.org/SDMX-JSON/data/PPPGDP/PPP.AUS+AUT+BEL+CAN+CHL+CZE+DNK+EST+FIN+FRA+DEU+GRC+HUN+ISL+IRL+ISR+ITA+JPN+KOR+LVA+LTU+LUX+MEX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+SWE+CHE+TUR+GBR+USA+EA18+OECD/all?startTime=2009&endTime=2017&dimensionAtObservation=allDimensions";
-    const grossDomesticProduct = "https://stats.oecd.org/SDMX-JSON/data/SNA_TABLE1/AUS+AUT+BEL+CAN+CHL+CZE+DNK+EST+FIN+FRA+DEU+GRC+HUN+ISL+IRL+ISR+ITA+JPN+KOR+LVA+LTU+LUX+MEX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+SWE+CHE+TUR+GBR+USA+EA19+EU28+OECD+NMEC+ARG+BRA+BGR+CHN+COL+CRI+HRV+CYP+IND+IDN+MLT+ROU+RUS+SAU+ZAF.B1_GA.C/all?startTime=2009&endTime=2017&dimensionAtObservation=allDimensions";
+    // var tourismInbound = "https://stats.oecd.org/SDMX-JSON/data/TOURISM_INBOUND/AUS+AUT+BEL+BEL-BRU+BEL-VLG+BEL-WAL+CAN+CHL+CZE+DNK+EST+FIN+FRA+DEU+GRC+HUN+ISL+IRL+ISR+ITA+JPN+KOR+LVA+LTU+LUX+MEX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+SWE+CHE+TUR+GBR+USA+NMEC+ARG+BRA+BGR+CHN+COL+CRI+HRV+EGY+MKD+IND+IDN+MLT+MAR+PER+PHL+ROU+RUS+ZAF.INB_ARRIVALS_TOTAL/all?startTime=2009&endTime=2017";
+    // var purchasingPowerParities = "https://stats.oecd.org/SDMX-JSON/data/PPPGDP/PPP.AUS+AUT+BEL+CAN+CHL+CZE+DNK+EST+FIN+FRA+DEU+GRC+HUN+ISL+IRL+ISR+ITA+JPN+KOR+LVA+LTU+LUX+MEX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+SWE+CHE+TUR+GBR+USA+EA18+OECD/all?startTime=2009&endTime=2017&dimensionAtObservation=allDimensions";
+    // var grossDomesticProduct = "https://stats.oecd.org/SDMX-JSON/data/SNA_TABLE1/AUS+AUT+BEL+CAN+CHL+CZE+DNK+EST+FIN+FRA+DEU+GRC+HUN+ISL+IRL+ISR+ITA+JPN+KOR+LVA+LTU+LUX+MEX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+SWE+CHE+TUR+GBR+USA+EA19+EU28+OECD+NMEC+ARG+BRA+BGR+CHN+COL+CRI+HRV+CYP+IND+IDN+MLT+ROU+RUS+SAU+ZAF.B1_GA.C/all?startTime=2009&endTime=2017&dimensionAtObservation=allDimensions";
 
     // Convert the recieved responses to json strings
+    var tourismInbound = "tourism.json";
+    var purchasingPowerParities = "ppp.json";
+    var grossDomesticProduct = "gdp.json";
+
     var requests = [d3.json(tourismInbound), d3.json(purchasingPowerParities), d3.json(grossDomesticProduct)];
 
     // transform the responses into useful data objects
     Promise.all(requests).then(function(response) {
-        let tourism = transformResponseTourism(response[0]);
-        let ppp = transformResponsePPP(response[1]);
-        let gdp = transformResponseGDP(response[2]);
+        let tourism = response[0]//transformResponseTourism(response[0]);
+        let ppp = response[1]//transformResponsePPP(response[1]);
+        let gdp = response[2]//transformResponseGDP(response[2]);
+        let datasets = prepareData(tourism, ppp, gdp);
 
         // Draw a scatterplot with the recieved data
-        scatterPlot([tourism, ppp, gdp])
+        scatterPlot(datasets)
 
         // Catch errors
         }).catch(function(e){
         throw(e);
     });
-
 };
+
+
+function prepareData(tourism, ppp, gdp) {
+
+    var addDataToDict = function(dataset, datasetCountries, dataIndex) {
+        for (var i = 0; i < datasetCountries.length; i++) {
+            var countryName = (datasetCountries[i])
+            if (dataCountries.includes(countryName)) {
+                var countryData = dataset[countryName];
+                var countryIndex = dataCountries.indexOf(countryName);
+
+                for (var j = 0; j < countryData.length; j++) {
+                    var year = countryData[j].Time;
+                    if (year == undefined) {
+                        year = countryData[j].Year
+                    };
+                    var data = countryData[j].Datapoint;
+
+                    if (dataYears.includes(year)) {
+                        datasets[year][countryIndex][dataIndex] = data
+
+            }}}
+        }
+    };
+
+    var tourismCountries = Object.keys(tourism);
+    var pppCountries = Object.keys(ppp);
+    var gdpCountries = Object.keys(gdp);
+
+    var dataCountries = CommonCountries([tourismCountries, pppCountries, gdpCountries]);
+    var dataYears = ["2012","2013","2014","2015","2016","2017"]; // alleen 2012-2017
+
+    var datasets = {}
+    dataYears.forEach(function(year) {
+        datasets[year] = [];
+        dataCountries.forEach(function(country) {
+            datasets[year].push([country, "tourism", "ppp", "gdp"]);
+        })
+    });
+
+
+    addDataToDict(tourism, tourismCountries, 1);
+    console.log(datasets);
+    addDataToDict(ppp, pppCountries, 2);
+    console.log(datasets);
+    addDataToDict(gdp, gdpCountries, 3);
+    console.log(datasets);
+
+    return [tourism, ppp, gdp]
+};
+
+// https://codereview.stackexchange.com/questions/96096/find-common-elements-in-a-list-of-arrays
+function CommonCountries(dataCountries) {
+    var currentValues = {};
+    var commonValues = {};
+    for (var i = 0; i < dataCountries[0].length; i++) {
+        currentValues[dataCountries[0][i]] = "";
+    }
+    for (var i = 1; i < dataCountries.length; i++) {
+        var currentArray = dataCountries[i];
+        for (var j = 0; j < currentArray.length; j++) {
+            if (currentArray[j] in currentValues){
+                commonValues[currentArray[j]] = "";
+            }
+        }
+        currentValues = commonValues;
+        commonValues = {};
+    }
+    return Object.keys(currentValues);
+};
+
+/////////////////////////////////////////////////////////////////////////////////
+    /*
+     * Maken van data lijst met elementen dictionary van dataset waarden
+     * data = [ {tourism : 2342342, ppp : 23456, gdp: 2345634},
+     *          {tourism : 234234,  ppp : 156,   gdp: Null},
+     *          {tourism : Null, ppp : 1346,  gdp: 4234213}
+     *          ]
+     *
+     * Eventueel land en jaar toevoegen? => mogelijkheid landen / jaren te isoleren
+     */
+
+     // Lijst van landen in alle 3 datasets
+     // Lijst van alle jaren (2009 - 2017)
+
+     // Maak lege lijst aan voor data
+
+     // Loopen over alle landen in de landen Lijst
+
+        // Loopen over elk jaar
+
+            // Maak lege dict aan
+            // Voeg eventueel land en jaar toe aan dic
+
+            // Als tourism een waarde bij dit land en jaar heeft
+                // Voeg {tourism : datapunt} toe aan dict
+            // Anders voeg Null waarde toe
+
+            // Als ppp een waarde bij dit land en jaar heeft
+                // Voeg {ppp : datapunt} toe aan dict
+            // Anders voeg Null waarde toe
+
+            // Als gdp een waarde bij dit land en jaar heeft
+                // Voeg {gdp : datapunt} toe aan dict
+            // Anders voeg Null waarde toe
+
+            // Als dict minimaal 2 non-Null waardes heeft
+                // Voeg dict toe aan data lijst
+
+
+
+
 
 
 /*
@@ -153,7 +269,6 @@ function scatterPlot(datasets) {
     var tourismCountries = Object.keys(tourism);
     var data = [];
     var years = ["2009","2010","2011","2012","2013","2014","2015","2016","2017"];
-    console.log(years);
 
     // tourismCountries.forEach(function(country) {
     //     let countryIndex = tourismCountries.indexOf(country);
@@ -174,7 +289,6 @@ function scatterPlot(datasets) {
         let yValue = ppp[tourismCountries[0]][yearIndex].Datapoint;
         data.push([xValue, yValue]);
     });
-    console.log(data);
 
     // Define a "g" for each point
     var points = scatter.selectAll(".point")
@@ -193,43 +307,7 @@ function scatterPlot(datasets) {
     })
     .attr("r", 5);
 
-/////////////////////////////////////////////////////////////////////////////////
-    /*
-     * Maken van data lijst met elementen dictionary van dataset waarden
-     * data = [ {tourism : 2342342, ppp : 23456, gdp: 2345634},
-     *          {tourism : 234234,  ppp : 156,   gdp: Null},
-     *          {tourism : Null, ppp : 1346,  gdp: 4234213}
-     *          ]
-     *
-     * Eventueel land en jaar toevoegen? => mogelijkheid landen / jaren te isoleren
-     */
 
-     // Lijst van landen in alle 3 datasets
-     // Lijst van alle jaren (2009 - 2017)
-
-     // Maak lege lijst aan voor data
-
-     // Loopen over alle landen in de landen Lijst
-
-        // Loopen over elk jaar
-
-            // Maak lege dict aan
-            // Voeg eventueel land en jaar toe aan dic
-
-            // Als tourism een waarde bij dit land en jaar heeft
-                // Voeg {tourism : datapunt} toe aan dict
-            // Anders voeg Null waarde toe
-
-            // Als ppp een waarde bij dit land en jaar heeft
-                // Voeg {ppp : datapunt} toe aan dict
-            // Anders voeg Null waarde toe
-
-            // Als gdp een waarde bij dit land en jaar heeft
-                // Voeg {gdp : datapunt} toe aan dict
-            // Anders voeg Null waarde toe
-
-            // Als dict minimaal 2 non-Null waardes heeft
-                // Voeg dict toe aan data lijst
 
 };
 

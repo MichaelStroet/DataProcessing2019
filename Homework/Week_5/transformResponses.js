@@ -13,7 +13,7 @@ function transformResponseTourism(data){
 
     // access data property of the response
     let dataHere = data.dataSets[0].series;
-
+    
     // access variables in the response and save length for later
     let series = data.structure.dimensions.series;
     let seriesLength = series.length;
@@ -55,6 +55,7 @@ function transformResponseTourism(data){
                 tempString.forEach(function(s, indexi){
                     tempObj[varArray[indexi].name] = varArray[indexi].values[s].name;
                 });
+
 
                 // every datapoint has a time and ofcourse a datapoint
                 tempObj["Time"] = obs.name;
