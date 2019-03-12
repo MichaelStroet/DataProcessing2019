@@ -1,2 +1,19 @@
 /* Name: Michael Stroet
    Student number: 11293284 */
+
+.point:hover {
+   r: 8px;
+}
+
+.tooltip {
+ color: white;
+ position: absolute;
+ text-align: center;
+ width: 100px;
+ height: 15px;
+ padding: 2px;
+ font: 12px sans-serif;
+ background: rgba(0,0,0,.8);
+ border: 2px solid black;
+ pointer-events: none;
+}
