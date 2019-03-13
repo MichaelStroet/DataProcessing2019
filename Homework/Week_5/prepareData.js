@@ -1,15 +1,19 @@
 // Name: Michael Stroet
 // Student number: 11293284
 
-function prepareData(tourism, ppp, gdp, dataYears, dataList) {
+function prepareData(tourism, ppp, gdp, yearsList, dataList) {
 
+    //
     var addDataToDict = function(dataset, datasetCountries, dataIndex) {
+
+        // Itterate over each country common across all datasets
         for (var i = 0; i < datasetCountries.length; i++) {
             var countryName = (datasetCountries[i])
             if (dataCountries.includes(countryName)) {
                 var countryData = dataset[countryName];
                 var countryIndex = dataCountries.indexOf(countryName);
 
+                // Isolate each year and corresponding datapoint and add them to the datasets object
                 for (var j = 0; j < countryData.length; j++) {
                     var year = countryData[j].Time;
                     if (year == undefined) {
@@ -17,32 +21,38 @@ function prepareData(tourism, ppp, gdp, dataYears, dataList) {
                     };
                     var data = countryData[j].Datapoint;
 
-                    if (dataYears.includes(year)) {
+                    if (yearsList.includes(year)) {
                         datasets[year][countryIndex][dataIndex] = data
-
             }}}
         }
     };
 
+    // Get the countries in each dataset as a list
     var tourismCountries = Object.keys(tourism);
     var pppCountries = Object.keys(ppp);
     var gdpCountries = Object.keys(gdp);
-    var dataCountries = CommonCountries([tourismCountries, pppCountries, gdpCountries]);
 
+    // Find all countries shared between all datasets and save them as an array
+    var dataCountries = commonCountries([tourismCountries, pppCountries, gdpCountries]);
+
+    // Define an empty object
     var datasets = {};
 
-    dataYears.forEach(function(year) {
+    // Add each year to the object as an array of arrays with data per country
+    yearsList.forEach(function(year) {
         datasets[year] = [];
         dataCountries.forEach(function(country) {
             datasets[year].push([dataList[0], dataList[1], dataList[2], country]);
         })
     });
 
+    // Add all data to the datasets object
     addDataToDict(tourism, tourismCountries, dataList.indexOf("tourism"));
     addDataToDict(ppp, pppCountries, dataList.indexOf("ppp"));
     addDataToDict(gdp, gdpCountries, dataList.indexOf("gdp"));
 
-    dataYears.forEach(function(year) {
+    // Remove all arrays with missing data from the datasets
+    yearsList.forEach(function(year) {
         for (var i = datasets[year].length - 1; i >= 0; --i) {
             var country = datasets[year][i];
             if (typeof(country[0]) == "string" || typeof(country[1]) == "string" || typeof(country[2]) == "string") {
@@ -51,22 +61,21 @@ function prepareData(tourism, ppp, gdp, dataYears, dataList) {
         }
     });
 
+    // return the finished object
     return datasets;
 };
 
-
-// https://codereview.stackexchange.com/questions/96096/find-common-elements-in-a-list-of-arrays
-function CommonCountries(countryArrays) {
+function commonCountries(countryArrays) {
     /*
      * Determines the common countries in each datasets and returns them in an array
      */
 
-    var currentValues = {};
-    var commonValues = {};
+    var currentCountries = {};
+    var commonCountries = {};
 
-    // Initialise the currentValues object with the first array of countries
+    // Initialise the currentCountries object with the first array of countries
     for (var i = 0; i < countryArrays[0].length; i++) {
-        currentValues[countryArrays[0][i]] = "";
+        currentCountries[countryArrays[0][i]] = "";
     };
 
     // Check each other array for common countries, adding them to a seperate object
@@ -74,14 +83,14 @@ function CommonCountries(countryArrays) {
         var currentArray = countryArrays[i];
 
         for (var j = 0; j < currentArray.length; j++) {
-            if (currentArray[j] in currentValues){
-                commonValues[currentArray[j]] = "";
+            if (currentArray[j] in currentCountries){
+                commonCountries[currentArray[j]] = "";
             }
         }
-        currentValues = commonValues;
-        commonValues = {};
+        currentCountries = commonCountries;
+        commonCountries = {};
     }
 
     // Return the common countries in an array
-    return Object.keys(currentValues);
+    return Object.keys(currentCountries);
 };

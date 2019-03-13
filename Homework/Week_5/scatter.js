@@ -10,13 +10,18 @@ window.onload = function() {
     var firstYear = 2012;
     var lastYear = 2017;
 
-    var dataYears = [];
+    var yearsList = [];
     for (var year = firstYear; year <= lastYear; year++) {
-        dataYears.push(`${year}`);
+        yearsList.push(`${year}`);
     }
 
+    // Array for the API requests
     var requests = [];
+
+    // Array for the order in which to put data in prepareData.js
     var dataList = [];
+
+    // Array for the label text for each corresponding dataset
     var labelList = [];
 
     // Call OECD API for three datasets and convert them to json strings
@@ -39,23 +44,19 @@ window.onload = function() {
     dataList.push("gdp");
     labelList.push("Bruto binnenlands product (Nationale valuta per US$)");
 
-    // transform the responses into useful data objects
+
     Promise.all(requests).then(function(response) {
 
+        // transform the responses into useful data objects
         var tourism = transformResponseTourism(response[dataList.indexOf("tourism")]);
         var ppp = transformResponsePPP(response[dataList.indexOf("ppp")]);
         var gdp = transformResponseGDP(response[dataList.indexOf("gdp")]);
 
-        //var tourism = response[dataList.indexOf("tourism")];
-        //var ppp = response[dataList.indexOf("ppp")];
-        //var gdp = response[dataList.indexOf("gdp")];
-
         // Prepare the datasets for the scatterplot
-        var datasets = prepareData(tourism, ppp, gdp, dataYears, dataList);
-        console.log(datasets);
+        var datasets = prepareData(tourism, ppp, gdp, yearsList, dataList);
 
         // Draw a scatterplot with the recieved data
-        scatterPlot(datasets, dataYears, dataList, labelList);
+        scatterPlot(datasets, yearsList, dataList, labelList);
 
         // Catch errors
         }).catch(function(e){
@@ -64,144 +65,222 @@ window.onload = function() {
 };
 
 
-function scatterPlot(datasets, dataYears, dataList, labelList) {
+function scatterPlot(datasets, yearsList, dataList, labelList) {
     /*
-     * Draws an interactive scatterplot
+     * Draws an interactive scatterplot updateable by year
      */
 
+    // Local function for (re)drawing the scatterplot
+    var updateScatter = function(year) {
+
+        // Remove the old scatterplot (if any)
+        d3.selectAll("#remove").remove();
+
+        var yearData = datasets[year];
+
+        
+        for (var i = 0; i < colors.length; i++)
+            //colors[Math.floor(point[colorIndex] / (maxValueColor / colors.length))]
+        legend.selectAll("g").data(colors)
+            .enter()
+            .append('g')
+            .attr("id", "remove")
+            .each(function(d,i){
+                var g = d3.select(this);
+
+                g.append("rect")
+                    .attr("x", legendX)
+                    .attr("y", legendY + i * itemSeperation)
+                    .attr("width", 2 * sizeColorBlock)
+                    .attr("height",sizeColorBlock)
+                    .style("fill", colors[i])
+                    .style("stroke", "black");
+
+                g.append("text")
+                    .attr("x", legendX + 2 * sizeColorBlock + 5)
+                    .attr("y", legendY + (i * itemSeperation) + sizeColorBlock)
+                    .text(colors[i]);
+            });
+
+         // Scaling function for x values
+         const xScale = d3.scaleLinear()
+             .range([0, chartWidth])
+             .domain([0, maxValue(yearData, xIndex) * 1.05]);
+
+         // Scaling function for y values
+         const yScale = d3.scaleLinear()
+             .range([chartHeight, 0])
+             .domain([0, maxValue(yearData, yIndex) * 1.05]);
+
+         // Draw x-axis
+         scatter.append("g").call(d3.axisBottom(xScale))
+             .attr("class", "axis")
+             .attr("id", "remove")
+             .attr("transform", `translate(0, ${chartHeight})`);
+
+         // Draw x label
+         svg.append("text")
+             .attr("class", "label")
+             .attr("id", "remove")
+             .attr("x", chartWidth / 2 + padding.left)
+             .attr("y", chartHeight + padding.top + padding.bottom / 1.3)
+             .attr("text-anchor", "middle")
+             .text(`${labelList[xIndex]}`);
+
+         // Draw vertical gridlines
+         scatter.append("g")
+             .attr("class", "grid")
+             .attr("id", "remove")
+             .attr("opacity", 0.3)
+             .call(d3.axisBottom(xScale)
+                 .tickSize(chartHeight, 0, 0)
+                 .tickFormat("")
+             );
+
+         // Draw y-axis
+         scatter.append("g").call(d3.axisLeft(yScale))
+             .attr("class", "axis")
+             .attr("id", "remove");
+
+         // Draw y label
+         svg.append("text")
+             .attr("class", "label")
+             .attr("id", "remove")
+             .attr("x", - (chartHeight / 2) - padding.top)
+             .attr("y", padding.left / 5)
+             .attr("transform", "rotate(270)")
+             .attr("text-anchor", "middle")
+             .text(`${labelList[yIndex]}`);
+
+         // Draw horizontal gridlines
+         scatter.append("g")
+             .attr("class", "grid")
+             .attr("id", "remove")
+             .attr("opacity", 0.3)
+             .call(d3.axisLeft(yScale)
+                 .tickSize(-chartWidth, 0, 0)
+                 .tickFormat("")
+             );
+
+         // Draw title
+         svg.append("text")
+             .attr("class", "title")
+             .attr("id", "remove")
+             .attr("x", chartWidth / 2 + padding.left)
+             .attr("y", padding.top / 2)
+             .attr("text-anchor", "middle")
+             .text(`Uitgaand toerisme van verschillende landen in ${year} afhankelijk van BBP en koopkrachtpariteit`);
+
+        // calculate the maximum value of the color dataset
+        var maxValueColor = maxValue(yearData, colorIndex) * 1.0001;
+
+        // Draw all data entries as points in the scatterplot
+        var points = scatter.selectAll(".point")
+            .data(yearData)
+            .enter()
+            .append("circle")
+                .attr("class", "point")
+                .attr("id", "remove")
+                .attr("cx", function(point) {
+                return xScale(point[xIndex]);
+                })
+                .attr("cy", function(point) {
+                return yScale(point[yIndex]);
+                })
+                .attr("fill", function(point) {
+                return colors[Math.floor(point[colorIndex] / (maxValueColor / colors.length))];
+                })
+                .on("mouseover", function(point) {
+                    tooltip
+                        .transition()
+                        .duration(50)
+                        .style('opacity', 0.9);
+                    tooltip
+                        .html(point[point.length - 1])
+                        .style("left", (d3.event.pageX + 5) + "px")
+                        .style("top", (d3.event.pageY - 40) + "px");
+                })
+                .on("mouseout", function() {
+                tooltip
+                .transition()
+                .duration(500)
+                .style('opacity', 0);
+                });
+    };
+
     // Dimensions of the figure
-    var svgWidth = 900;
+    var svgWidth = 1000;
     var svgHeight = 600;
 
-    // Dimensions for the barchart with padding on all sides
-    var padding = 80;
-    var chartWidth = svgWidth - 2 * padding;
-    var chartHeight = svgHeight - 2 * padding;
+    // Dimensions for the scatterplot with padding on all sides
+    var padding = {
+        top: 30,
+        right: 130,
+        bottom: 50,
+        left: 100
+    };
 
-    // Define a "svg" for drawing the figure
+    var chartWidth = svgWidth - padding.left - padding.right;
+    var chartHeight = svgHeight - padding.top - padding.bottom;;
+
+    // Define a "svg" for the figure
     const svg = d3.select("body").append("svg")
         .attr("width", svgWidth)
         .attr("height", svgHeight);
 
-    // Define a "g" for drawing the scatterplot
+    // Define a "g" for the scatterplot
     const scatter = svg.append("g")
         .attr("class", "scatterplot")
-        .attr("transform", `translate(${padding}, ${padding})`);
+        .attr("transform", `translate(${padding.left}, ${padding.top})`);
 
-    // Define the div for the tooltip
-    const div = d3.select("body").append('div')
+    // Define a "div" for the tooltip
+    const tooltip = d3.select("body").append('div')
         .attr('class', 'tooltip')
         .style('opacity', 0);
 
-    var defaultYear = dataYears[0];
-    defaultYear = "2012"
-    var yearData = datasets[defaultYear];
+    // Define a "g" for the legend
+    const legend = svg.append("g")
+        .attr("class", "legend");
 
+    // Define a "div" for the update buttons
+    const buttonGroup = d3.select("body").append("div")
+        .attr("class", "buttonGroup")
+
+    // Define the size and location of the legend
+    var legendX = padding.left + chartWidth + 10;
+    var legendY = padding.top;
+
+    // Define the internal sizes and distances of the legend
+    var sizeColorBlock = 10;
+    var itemSeperation = 20;
+
+    // Define which dataset will be used for the axes and the color
     var xIndex = dataList.indexOf("tourism");
-    var yIndex = dataList.indexOf("tourism");
+    var yIndex = dataList.indexOf("gdp");
     var colorIndex = dataList.indexOf("ppp");
 
-    // Scaling function for x values
-    const xScale = d3.scaleLinear()
-        .range([0, chartWidth])
-        .domain([0, maxValue(yearData, xIndex) * 1.05]);
-
-    // Scaling function for y values
-    const yScale = d3.scaleLinear()
-        .range([chartHeight, 0])
-        .domain([0, maxValue(yearData, yIndex) * 1.05]);
-
-    // Draw x-axis
-    scatter.append("g").call(d3.axisBottom(xScale))
-        .attr("class", "axis")
-        .attr("transform", `translate(0, ${chartHeight})`);
-
-    // Draw x label
-    svg.append("text")
-        .attr("class", "label")
-        .attr("x", chartWidth / 2 + padding)
-        .attr("y", chartHeight + padding * 1.7)
-        .attr("text-anchor", "middle")
-        .text(`${labelList[xIndex]}`);
-
-    // Draw vertical gridlines
-    scatter.append("g")
-        .attr("class", "grid")
-        .attr("opacity", 0.3)
-        .call(d3.axisBottom(xScale)
-            .tickSize(chartHeight, 0, 0)
-            .tickFormat("")
-        );
-
-    // Draw y-axis
-    scatter.append("g").call(d3.axisLeft(yScale))
-        .attr("class", "axis");
-
-    // Draw y label
-    svg.append("text")
-        .attr("class", "label")
-        .attr("x", - (chartHeight / 2) - padding)
-        .attr("y", padding / 3.5)
-        .attr("transform", "rotate(270)")
-        .attr("text-anchor", "middle")
-        .text(`${labelList[yIndex]}`);
-
-    // Draw horizontal gridlines
-    scatter.append("g")
-        .attr("class", "grid")
-        .attr("opacity", 0.3)
-        .call(d3.axisLeft(yScale)
-            .tickSize(-chartWidth, 0, 0)
-            .tickFormat("")
-        );
-
-    // Draw title
-    svg.append("text")
-        .attr("class", "title")
-        .attr("x", chartWidth / 2 + padding)
-        .attr("y", 40)
-        .attr("text-anchor", "middle")
-        .text(`${defaultYear}`);
-
-    // http://colorbrewer2.org/#type=diverging&scheme=RdYlBu&n=11
+    // Define the colors for the color dataset (origin: http://colorbrewer2.org/#type=diverging&scheme=RdYlBu&n=11)
     var colors = ['#a50026','#d73027','#f46d43','#fdae61','#fee090','#ffffbf','#e0f3f8','#abd9e9','#74add1','#4575b4','#313695'];
-    var totalColors = colors.length;
-    var maxValueColor = maxValue(yearData, colorIndex) * 1.001;
 
-    // Define a "g" for all points
-    var points = scatter.selectAll(".point")
-    .data(yearData)
-    .enter()
-    .append("g");
+    // Create a button for each year in yearsList
+    buttonGroup.selectAll("input")
+        .data(yearsList)
+        .enter()
+        .append("input")
+        .attr("type","button")
+        .attr("class","button")
+        .attr("value", function (year) {
+            return year;
+        });
 
-    // Draw bars with tooltips of their value when mousing over them
-    points.append("circle")
-    .attr("class", "point")
-    .attr("cx", function(point) {
-        return xScale(point[xIndex]);
-    })
-    .attr("cy", function(point) {
-        return yScale(point[yIndex]);
-    })
-    .attr("fill", function(point) {
-        return colors[Math.floor(point[colorIndex] / (maxValueColor / totalColors))];
-    })
-    .on("mouseover", function(point) {
-        div
-            .transition()
-            .duration(50)
-            .style('opacity', 0.9);
-        div
-            .html(point[point.length - 1])
-            .style("left", (d3.event.pageX + 5) + "px")
-            .style("top", (d3.event.pageY - 40) + "px");
-    })
-    .on("mouseout", () => {
-        div
-          .transition()
-          .duration(500)
-          .style('opacity', 0);
-      });
+    // When a button is pressed, redraw the scatterplot for the corresponding year
+    buttonGroup.selectAll("input")
+        .on("click", function(year) {
+            return updateScatter(year);
+        });
+
+    // Draw the first year as the default plot
+    updateScatter(yearsList[0]);
 };
 
 function maxValue(data, dataIndex) {
