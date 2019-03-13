@@ -6,37 +6,57 @@ window.onload = function() {
      * Main function
      */
 
-    var dataYears = ["2012","2013","2014","2015","2016","2017"];
-    var dataList = ["tourism","ppp","gdp"]
+    // Create an array of years
+    var firstYear = 2012;
+    var lastYear = 2017;
 
-    var first = dataYears[0];
-    var last = dataYears[dataYears.length - 1];
+    var dataYears = [];
+    for (var year = firstYear; year <= lastYear; year++) {
+        dataYears.push(`${year}`);
+    }
 
-    // Call OECD API for three datasets
-    // var tourismInbound = `https://stats.oecd.org/SDMX-JSON/data/TOURISM_INBOUND/AUS+AUT+BEL+BEL-BRU+BEL-VLG+BEL-WAL+CAN+CHL+CZE+DNK+EST+FIN+FRA+DEU+GRC+HUN+ISL+IRL+ISR+ITA+JPN+KOR+LVA+LTU+LUX+MEX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+SWE+CHE+TUR+GBR+USA+NMEC+ARG+BRA+BGR+CHN+COL+CRI+HRV+EGY+MKD+IND+IDN+MLT+MAR+PER+PHL+ROU+RUS+ZAF.INB_ARRIVALS_TOTAL/all?startTime=${first}&endTime=${last}`;
-    // var purchasingPowerParities = `https://stats.oecd.org/SDMX-JSON/data/PPPGDP/PPP.AUS+AUT+BEL+CAN+CHL+CZE+DNK+EST+FIN+FRA+DEU+GRC+HUN+ISL+IRL+ISR+ITA+JPN+KOR+LVA+LTU+LUX+MEX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+SWE+CHE+TUR+GBR+USA+EA18+OECD/all?startTime=${first}&endTime=${last}&dimensionAtObservation=allDimensions`;
-    // var grossDomesticProduct = `https://stats.oecd.org/SDMX-JSON/data/SNA_TABLE1/AUS+AUT+BEL+CAN+CHL+CZE+DNK+EST+FIN+FRA+DEU+GRC+HUN+ISL+IRL+ISR+ITA+JPN+KOR+LVA+LTU+LUX+MEX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+SWE+CHE+TUR+GBR+USA+EA19+EU28+OECD+NMEC+ARG+BRA+BGR+CHN+COL+CRI+HRV+CYP+IND+IDN+MLT+ROU+RUS+SAU+ZAF.B1_GA.C/all?startTime=${first}&endTime=${last}&dimensionAtObservation=allDimensions`;
+    var requests = [];
+    var dataList = [];
+    var labelList = [];
 
-    // OECD API result taken from the dataprocessing website
-    var tourismInbound = "tourism.json";
-    var purchasingPowerParities = "ppp.json";
-    var grossDomesticProduct = "gdp.json";
+    // Call OECD API for three datasets and convert them to json strings
 
-    // Convert the API responses to json strings
-    var requests = [d3.json(tourismInbound), d3.json(purchasingPowerParities), d3.json(grossDomesticProduct)];
+    // https://stats.oecd.org/Index.aspx?DataSetCode=TOURISM_OUTBOUND
+    var tourismOutbound = `https://stats.oecd.org/SDMX-JSON/data/TOURISM_OUTBOUND/AUS+AUT+BEL+BEL-BRU+BEL-VLG+BEL-WAL+CAN+CHL+CZE+DNK+EST+FIN+FRA+DEU+GRC+HUN+ISL+IRL+ISR+ITA+JPN+KOR+LVA+LTU+LUX+MEX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+SWE+CHE+TUR+GBR+USA+NMEC+ARG+BRA+BGR+CHN+COL+CRI+HRV+EGY+IND+IDN+MLT+MAR+ROU+RUS+ZAF.OBND_DEP_TOTAL/all?startTime=${firstYear}&endTime=${lastYear}`;
+    requests.push(d3.json(tourismOutbound));
+    dataList.push("tourism");
+    labelList.push("Uitgaand toerisme");
+
+    // https://stats.oecd.org/Index.aspx?DataSetCode=PPPGDP
+    var purchasingPowerParities = `https://stats.oecd.org/SDMX-JSON/data/PPPGDP/PPP.AUS+AUT+BEL+CAN+CHL+CZE+DNK+EST+FIN+FRA+DEU+GRC+HUN+ISL+IRL+ISR+ITA+JPN+KOR+LVA+LTU+LUX+MEX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+SWE+CHE+TUR+GBR+USA+EA18+OECD/all?startTime=${firstYear}&endTime=${lastYear}&dimensionAtObservation=allDimensions`;
+    requests.push(d3.json(purchasingPowerParities));
+    dataList.push("ppp");
+    labelList.push("Koopkrachtpariteit (Nationale valuta per US$)");
+
+    // https://stats.oecd.org/Index.aspx?DataSetCode=SNA_TABLE1
+    var grossDomesticProduct = `https://stats.oecd.org/SDMX-JSON/data/SNA_TABLE1/AUS+AUT+BEL+CAN+CHL+CZE+DNK+EST+FIN+FRA+DEU+GRC+HUN+ISL+IRL+ISR+ITA+JPN+KOR+LVA+LTU+LUX+MEX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+SWE+CHE+TUR+GBR+USA+EA19+EU28+OECD+NMEC+ARG+BRA+BGR+CHN+COL+CRI+HRV+CYP+IND+IDN+MLT+ROU+RUS+SAU+ZAF.B1_GA.C/all?startTime=${firstYear}&endTime=${lastYear}&dimensionAtObservation=allDimensions`;
+    requests.push(d3.json(grossDomesticProduct));
+    dataList.push("gdp");
+    labelList.push("Bruto binnenlands product (Nationale valuta per US$)");
 
     // transform the responses into useful data objects
     Promise.all(requests).then(function(response) {
-        var tourism = response[dataList.indexOf("tourism")]//transformResponseTourism(response[dataList.indexOf("tourism")]);
-        var ppp = response[dataList.indexOf("ppp")]//transformResponsePPP(response[dataList.indexOf("ppp")]);
-        var gdp = response[dataList.indexOf("gdp")]//transformResponseGDP(response[dataList.indexOf("gdp")]);
+
+        var tourism = transformResponseTourism(response[dataList.indexOf("tourism")]);
+        var ppp = transformResponsePPP(response[dataList.indexOf("ppp")]);
+        var gdp = transformResponseGDP(response[dataList.indexOf("gdp")]);
+
+        //var tourism = response[dataList.indexOf("tourism")];
+        //var ppp = response[dataList.indexOf("ppp")];
+        //var gdp = response[dataList.indexOf("gdp")];
 
         // Prepare the datasets for the scatterplot
         var datasets = prepareData(tourism, ppp, gdp, dataYears, dataList);
         console.log(datasets);
 
         // Draw a scatterplot with the recieved data
-        scatterPlot(datasets, dataYears, dataList);
+        scatterPlot(datasets, dataYears, dataList, labelList);
+
         // Catch errors
         }).catch(function(e){
             throw(e);
@@ -44,7 +64,7 @@ window.onload = function() {
 };
 
 
-function scatterPlot(datasets, dataYears, dataList) {
+function scatterPlot(datasets, dataYears, dataList, labelList) {
     /*
      * Draws an interactive scatterplot
      */
@@ -78,17 +98,8 @@ function scatterPlot(datasets, dataYears, dataList) {
     var yearData = datasets[defaultYear];
 
     var xIndex = dataList.indexOf("tourism");
-    var yIndex = dataList.indexOf("gdp");
+    var yIndex = dataList.indexOf("tourism");
     var colorIndex = dataList.indexOf("ppp");
-
-    var maxValueColor = maxValue(yearData, colorIndex) * 1.001;
-
-    // List for an axis label for each dataset
-    var labelList = [
-        "Inkomend toerisme (miljoenen)",
-        "Koopkrachtpariteit (US$)",
-        "Bruto binnenlands product (miljarden US$)"
-    ];
 
     // Scaling function for x values
     const xScale = d3.scaleLinear()
@@ -135,14 +146,6 @@ function scatterPlot(datasets, dataYears, dataList) {
         .attr("text-anchor", "middle")
         .text(`${labelList[yIndex]}`);
 
-    // Draw title
-    svg.append("text")
-        .attr("class", "title")
-        .attr("x", chartWidth / 2 + padding)
-        .attr("y", 40)
-        .attr("text-anchor", "middle")
-        .text("titel");
-
     // Draw horizontal gridlines
     scatter.append("g")
         .attr("class", "grid")
@@ -152,9 +155,18 @@ function scatterPlot(datasets, dataYears, dataList) {
             .tickFormat("")
         );
 
+    // Draw title
+    svg.append("text")
+        .attr("class", "title")
+        .attr("x", chartWidth / 2 + padding)
+        .attr("y", 40)
+        .attr("text-anchor", "middle")
+        .text(`${defaultYear}`);
+
     // http://colorbrewer2.org/#type=diverging&scheme=RdYlBu&n=11
     var colors = ['#a50026','#d73027','#f46d43','#fdae61','#fee090','#ffffbf','#e0f3f8','#abd9e9','#74add1','#4575b4','#313695'];
-    var nColors = colors.length;
+    var totalColors = colors.length;
+    var maxValueColor = maxValue(yearData, colorIndex) * 1.001;
 
     // Define a "g" for all points
     var points = scatter.selectAll(".point")
@@ -171,11 +183,9 @@ function scatterPlot(datasets, dataYears, dataList) {
     .attr("cy", function(point) {
         return yScale(point[yIndex]);
     })
-    .attr("r", 5)
     .attr("fill", function(point) {
-        return colors[Math.floor(point[colorIndex] / (maxValueColor / nColors))];
+        return colors[Math.floor(point[colorIndex] / (maxValueColor / totalColors))];
     })
-    .attr("stroke", "black")
     .on("mouseover", function(point) {
         div
             .transition()
