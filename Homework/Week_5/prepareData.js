@@ -8,7 +8,7 @@ function prepareData(tourism, ppp, gdp, yearsList, dataList) {
 
         // Itterate over each country common across all datasets
         for (var i = 0; i < datasetCountries.length; i++) {
-            var countryName = (datasetCountries[i])
+            var countryName = (datasetCountries[i]);
             if (dataCountries.includes(countryName)) {
                 var countryData = dataset[countryName];
                 var countryIndex = dataCountries.indexOf(countryName);
@@ -23,8 +23,10 @@ function prepareData(tourism, ppp, gdp, yearsList, dataList) {
 
                     if (yearsList.includes(year)) {
                         datasets[year][countryIndex][dataIndex] = data
-            }}}
-        }
+                    };
+                };
+            };
+        };
     };
 
     // Get the countries in each dataset as a list
@@ -43,7 +45,7 @@ function prepareData(tourism, ppp, gdp, yearsList, dataList) {
         datasets[year] = [];
         dataCountries.forEach(function(country) {
             datasets[year].push([dataList[0], dataList[1], dataList[2], country]);
-        })
+        });
     });
 
     // Add all data to the datasets object
@@ -57,8 +59,8 @@ function prepareData(tourism, ppp, gdp, yearsList, dataList) {
             var country = datasets[year][i];
             if (typeof(country[0]) == "string" || typeof(country[1]) == "string" || typeof(country[2]) == "string") {
                 datasets[year].splice(i, 1);
-            }
-        }
+            };
+        };
     });
 
     // return the finished object
@@ -85,11 +87,11 @@ function commonCountries(countryArrays) {
         for (var j = 0; j < currentArray.length; j++) {
             if (currentArray[j] in currentCountries){
                 commonCountries[currentArray[j]] = "";
-            }
-        }
+            };
+        };
         currentCountries = commonCountries;
         commonCountries = {};
-    }
+    };
 
     // Return the common countries in an array
     return Object.keys(currentCountries);

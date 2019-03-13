@@ -13,7 +13,7 @@ window.onload = function() {
     var yearsList = [];
     for (var year = firstYear; year <= lastYear; year++) {
         yearsList.push(`${year}`);
-    }
+    };
 
     // Array for the API requests
     var requests = [];
@@ -99,7 +99,7 @@ function scatterPlot(datasets, yearsList, dataList, labelList) {
             nextValue += stepValue;
             legendItems.push(`${Math.round(previousValue)} - ${Math.round(nextValue)}`);
             previousValue = nextValue;
-        }
+        };
 
         // Draw legend of the color dataset
         legend.selectAll("g")
@@ -129,10 +129,10 @@ function scatterPlot(datasets, yearsList, dataList, labelList) {
             .attr("y", legendY - 15)
             .text("Koopkrachtpariteit");
 
-            legend.append("text")
-                .attr("x", legendX)
-                .attr("y", legendY - 5)
-                .text("(Nationaal valuta per US$)");
+        legend.append("text")
+            .attr("x", legendX)
+            .attr("y", legendY - 5)
+            .text("(Nationaal valuta per US$)");
 
 
         // Scaling function for x values
@@ -251,7 +251,7 @@ function scatterPlot(datasets, yearsList, dataList, labelList) {
     };
 
     var chartWidth = svgWidth - padding.left - padding.right;
-    var chartHeight = svgHeight - padding.top - padding.bottom;;
+    var chartHeight = svgHeight - padding.top - padding.bottom;
 
     // Define a "svg" for the figure
     const svg = d3.select("body").append("svg")
@@ -274,7 +274,7 @@ function scatterPlot(datasets, yearsList, dataList, labelList) {
 
     // Define a "div" for the update buttons
     const buttonGroup = d3.select("body").append("div")
-        .attr("class", "buttonGroup")
+        .attr("class", "buttonGroup");
 
     // Define which dataset will be used for the axes and the color
     var xIndex = dataList.indexOf("tourism");
@@ -309,6 +309,7 @@ function maxValue(data, dataIndex) {
     /*
      * Determines the maximum value of an array of arrays at a specific index
      */
+     
     return d3.max(data, function(country) {
         return country[dataIndex];
     });
