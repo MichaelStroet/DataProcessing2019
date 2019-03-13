@@ -36,13 +36,13 @@ window.onload = function() {
     var purchasingPowerParities = `https://stats.oecd.org/SDMX-JSON/data/PPPGDP/PPP.AUS+AUT+BEL+CAN+CHL+CZE+DNK+EST+FIN+FRA+DEU+GRC+HUN+ISL+IRL+ISR+ITA+JPN+KOR+LVA+LTU+LUX+MEX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+SWE+CHE+TUR+GBR+USA+EA18+OECD/all?startTime=${firstYear}&endTime=${lastYear}&dimensionAtObservation=allDimensions`;
     requests.push(d3.json(purchasingPowerParities));
     dataList.push("ppp");
-    labelList.push("Koopkrachtpariteit (Nationale valuta per US$)");
+    labelList.push("Koopkrachtpariteit (Nationaal valuta per US$)");
 
     // https://stats.oecd.org/Index.aspx?DataSetCode=SNA_TABLE1
     var grossDomesticProduct = `https://stats.oecd.org/SDMX-JSON/data/SNA_TABLE1/AUS+AUT+BEL+CAN+CHL+CZE+DNK+EST+FIN+FRA+DEU+GRC+HUN+ISL+IRL+ISR+ITA+JPN+KOR+LVA+LTU+LUX+MEX+NLD+NZL+NOR+POL+PRT+SVK+SVN+ESP+SWE+CHE+TUR+GBR+USA+EA19+EU28+OECD+NMEC+ARG+BRA+BGR+CHN+COL+CRI+HRV+CYP+IND+IDN+MLT+ROU+RUS+SAU+ZAF.B1_GA.C/all?startTime=${firstYear}&endTime=${lastYear}&dimensionAtObservation=allDimensions`;
     requests.push(d3.json(grossDomesticProduct));
     dataList.push("gdp");
-    labelList.push("Bruto binnenlands product (Nationale valuta per US$)");
+    labelList.push("Bruto binnenlands product (Nationaal valuta per US$)");
 
 
     Promise.all(requests).then(function(response) {
@@ -78,10 +78,32 @@ function scatterPlot(datasets, yearsList, dataList, labelList) {
 
         var yearData = datasets[year];
 
-        
-        for (var i = 0; i < colors.length; i++)
-            //colors[Math.floor(point[colorIndex] / (maxValueColor / colors.length))]
-        legend.selectAll("g").data(colors)
+        // calculate the maximum value of the color dataset
+        var maxValueColor = maxValue(yearData, colorIndex) * 1.0001;
+
+        // Define the size and location of the legend
+        var legendX = padding.left + chartWidth + 10;
+        var legendY = padding.top;
+
+        // Define the internal sizes and distances of the legend
+        var sizeColorBlock = 10;
+        var itemSeperation = 20;
+
+        var legendItems = [];
+
+        var previousValue = 0;
+        var nextValue = 0;
+        var stepValue = (maxValueColor / colors.length);
+
+        while (legendItems.length < colors.length) {
+            nextValue += stepValue;
+            legendItems.push(`${Math.round(previousValue)} - ${Math.round(nextValue)}`);
+            previousValue = nextValue;
+        }
+
+        // Draw legend of the color dataset
+        legend.selectAll("g")
+            .data(legendItems)
             .enter()
             .append('g')
             .attr("id", "remove")
@@ -98,44 +120,55 @@ function scatterPlot(datasets, yearsList, dataList, labelList) {
 
                 g.append("text")
                     .attr("x", legendX + 2 * sizeColorBlock + 5)
-                    .attr("y", legendY + (i * itemSeperation) + sizeColorBlock)
-                    .text(colors[i]);
+                    .attr("y", legendY + (i * itemSeperation) + 0.8 * sizeColorBlock)
+                    .text(legendItems[i]);
             });
 
-         // Scaling function for x values
-         const xScale = d3.scaleLinear()
-             .range([0, chartWidth])
-             .domain([0, maxValue(yearData, xIndex) * 1.05]);
+        legend.append("text")
+            .attr("x", legendX)
+            .attr("y", legendY - 15)
+            .text("Koopkrachtpariteit");
 
-         // Scaling function for y values
-         const yScale = d3.scaleLinear()
-             .range([chartHeight, 0])
-             .domain([0, maxValue(yearData, yIndex) * 1.05]);
+            legend.append("text")
+                .attr("x", legendX)
+                .attr("y", legendY - 5)
+                .text("(Nationaal valuta per US$)");
 
-         // Draw x-axis
-         scatter.append("g").call(d3.axisBottom(xScale))
-             .attr("class", "axis")
-             .attr("id", "remove")
-             .attr("transform", `translate(0, ${chartHeight})`);
 
-         // Draw x label
-         svg.append("text")
-             .attr("class", "label")
-             .attr("id", "remove")
-             .attr("x", chartWidth / 2 + padding.left)
-             .attr("y", chartHeight + padding.top + padding.bottom / 1.3)
-             .attr("text-anchor", "middle")
-             .text(`${labelList[xIndex]}`);
+        // Scaling function for x values
+        const xScale = d3.scaleLinear()
+            .range([0, chartWidth])
+            .domain([0, maxValue(yearData, xIndex) * 1.05]);
 
-         // Draw vertical gridlines
-         scatter.append("g")
-             .attr("class", "grid")
-             .attr("id", "remove")
-             .attr("opacity", 0.3)
-             .call(d3.axisBottom(xScale)
-                 .tickSize(chartHeight, 0, 0)
-                 .tickFormat("")
-             );
+        // Scaling function for y values
+        const yScale = d3.scaleLinear()
+            .range([chartHeight, 0])
+            .domain([0, maxValue(yearData, yIndex) * 1.05]);
+
+        // Draw x-axis
+        scatter.append("g").call(d3.axisBottom(xScale))
+            .attr("class", "axis")
+            .attr("id", "remove")
+            .attr("transform", `translate(0, ${chartHeight})`);
+
+        // Draw x label
+        svg.append("text")
+            .attr("class", "label")
+            .attr("id", "remove")
+            .attr("x", chartWidth / 2 + padding.left)
+            .attr("y", chartHeight + padding.top + padding.bottom / 1.3)
+            .attr("text-anchor", "middle")
+            .text(`${labelList[xIndex]}`);
+
+        // Draw vertical gridlines
+        scatter.append("g")
+            .attr("class", "grid")
+            .attr("id", "remove")
+            .attr("opacity", 0.3)
+            .call(d3.axisBottom(xScale)
+                .tickSize(chartHeight, 0, 0)
+                .tickFormat("")
+        );
 
          // Draw y-axis
          scatter.append("g").call(d3.axisLeft(yScale))
@@ -170,9 +203,6 @@ function scatterPlot(datasets, yearsList, dataList, labelList) {
              .attr("y", padding.top / 2)
              .attr("text-anchor", "middle")
              .text(`Uitgaand toerisme van verschillende landen in ${year} afhankelijk van BBP en koopkrachtpariteit`);
-
-        // calculate the maximum value of the color dataset
-        var maxValueColor = maxValue(yearData, colorIndex) * 1.0001;
 
         // Draw all data entries as points in the scatterplot
         var points = scatter.selectAll(".point")
@@ -209,13 +239,13 @@ function scatterPlot(datasets, yearsList, dataList, labelList) {
     };
 
     // Dimensions of the figure
-    var svgWidth = 1000;
-    var svgHeight = 600;
+    var svgWidth = 1280;
+    var svgHeight = 720;
 
     // Dimensions for the scatterplot with padding on all sides
     var padding = {
         top: 30,
-        right: 130,
+        right: 150,
         bottom: 50,
         left: 100
     };
@@ -245,14 +275,6 @@ function scatterPlot(datasets, yearsList, dataList, labelList) {
     // Define a "div" for the update buttons
     const buttonGroup = d3.select("body").append("div")
         .attr("class", "buttonGroup")
-
-    // Define the size and location of the legend
-    var legendX = padding.left + chartWidth + 10;
-    var legendY = padding.top;
-
-    // Define the internal sizes and distances of the legend
-    var sizeColorBlock = 10;
-    var itemSeperation = 20;
 
     // Define which dataset will be used for the axes and the color
     var xIndex = dataList.indexOf("tourism");
