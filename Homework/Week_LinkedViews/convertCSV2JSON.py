@@ -1,21 +1,20 @@
-#!/usr/bin/env python
 # Name: Michael Stroet
 # Student number: 11293284
 """
-This script converts a csv file into a JSON file
+This script will do something !!!!
 """
 
-import csv
+import ast
 import json
 import time
 import numpy as np
 import pandas as pd
 
 # Global constants for in and out put files and the required columns
-INPUT_CSV = "games-features.csv"    # Source: https://data.world/craigkelly/steam-game-data
+INPUT_CSV = "ted_main.csv"    # Source: https://www.kaggle.com/rounakbanik/ted-talks
 OUTPUT_JSON = "data.json"
 
-WANTED_DATA = ["PlatformWindows","PlatformLinux","PlatformMac","GenreIsNonGame"]
+WANTED_DATA = ["film_date", "tags"]
 
 def open_csv():
     '''
@@ -26,38 +25,74 @@ def open_csv():
     return(df)
 
 
-def save_json(df):
+def get_tags(df):
     '''
-    Output a JSON file containing all data ordered by index.
+    Returns all unique tags in the dataframe in a list
     '''
-    # Convert the dataframe to a json string
-    data_json = df.to_json(orient = "index")
 
-    with open(OUTPUT_JSON, 'w') as outfile:
-        outfile.write(data_json)
+    # Create a list of the tags of each talk
+    talk_tags = []
+    for talk in df[WANTED_DATA[1]]:
+        talk_tags.append(ast.literal_eval(talk))
+
+    # Create a list of all unique tags in talk_tags
+    unique_tags = []
+    for tags in talk_tags:
+        for tag in tags:
+            if not tag in unique_tags:
+                unique_tags.append(tag)
+
+    return unique_tags
+
+
+def make_tagdict(df, unique_tags):
+    '''
+    Creates a dictionary of talk timestamps for each tag
+    '''
+
+    dict = {}
+    for tag in unique_tags:
+        dict[tag] = {"talks": "", "timestamps": []}
+
+    for talk in df.iterrows():
+
+        index, values = talk
+
+        timestamp = values[0]
+        tags = ast.literal_eval(values[1])
+
+        for tag in tags:
+            dict[tag]["timestamps"].append(timestamp)
+
+        for tag in dict:
+            talks = len(dict[tag]["timestamps"])
+            dict[tag]["talks"] = talks
+            
+    return dict
 
 
 def preprocess_data(df):
     '''
-    Sanitises the data in the dataframe object
+    Prepares the data in the dataframe object for visualisation
     '''
-    # Remove all leading and trailing spaces from the column headers
-    df.columns = df.columns.str.strip(" ")
 
-    # Renames columns in the dataframe
-    col_rename_dict = {
-        WANTED_DATA[0] : "Windows",
-        WANTED_DATA[1] : "Linux",
-        WANTED_DATA[2] : "Mac"
-    }
+    # get all unique tags from the dataframe as a list
+    tags = get_tags(df)
 
-    df.rename(columns = col_rename_dict, inplace = True)
+    tagdict = make_tagdict(df, tags)
 
-    # Remove non-game rows and the nongame column
-    df = df[df.GenreIsNonGame == False]
-    df.drop(columns = ["GenreIsNonGame"], inplace = True)
+    return(tagdict)
 
-    return(df)
+
+def save_json(dict):
+    '''
+    Output a JSON file of the given dictionary
+    '''
+    # Convert the dictionary to a json string
+    data_json = json.dumps(dict)
+
+    with open(OUTPUT_JSON, 'w') as outfile:
+        outfile.write(data_json)
 
 
 if __name__ == "__main__":
@@ -65,8 +100,8 @@ if __name__ == "__main__":
     # Open the csv and convert it to a pandas dataframe object
     data_df = open_csv()
 
-    # Sanitise the dataframe
-    data_df = preprocess_data(data_df)
+    # Preprocess the dataframe
+    data_dict = preprocess_data(data_df)
 
     # Save the data as a json file
-    save_json(data_df)
+    save_json(data_dict)
