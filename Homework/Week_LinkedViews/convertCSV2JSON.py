@@ -1,14 +1,14 @@
 # Name: Michael Stroet
 # Student number: 11293284
 """
-This script will do something !!!!
+This script converts a csv file into a JSON file
 """
 
 import ast
 import json
-import time
 import numpy as np
 import pandas as pd
+from datetime import datetime
 
 # Global constants for in and out put files and the required columns
 INPUT_CSV = "ted_main.csv"    # Source: https://www.kaggle.com/rounakbanik/ted-talks
@@ -47,12 +47,12 @@ def get_tags(df):
 
 def make_tagdict(df, unique_tags):
     '''
-    Creates a dictionary of talk timestamps for each tag
+    Creates a dictionary of timestamps per tag
     '''
 
     dict = {}
     for tag in unique_tags:
-        dict[tag] = {"talks": "", "timestamps": []}
+        dict[tag] = []
 
     for talk in df.iterrows():
 
@@ -62,26 +62,77 @@ def make_tagdict(df, unique_tags):
         tags = ast.literal_eval(values[1])
 
         for tag in tags:
-            dict[tag]["timestamps"].append(timestamp)
+            dict[tag].append(timestamp)
 
-        for tag in dict:
-            talks = len(dict[tag]["timestamps"])
-            dict[tag]["talks"] = talks
-            
     return dict
 
 
 def preprocess_data(df):
     '''
-    Prepares the data in the dataframe object for visualisation
+    Preprocesses the data into a dictionary of timestamps per tag
     '''
 
     # get all unique tags from the dataframe as a list
     tags = get_tags(df)
 
+    # Creates a dictionary of timestamps per tag
     tagdict = make_tagdict(df, tags)
 
     return(tagdict)
+
+
+def unix_to_date(timestamp):
+    '''
+    Convert a unix timestamp to a date
+    '''
+    return datetime.utcfromtimestamp(timestamp).strftime("%Y-%m-%d")
+
+
+def get_days(timestamps):
+
+    days = []
+
+    for timestamp in timestamps:
+        day = unix_to_date(timestamp)
+        if not day in days:
+            days.append(day)
+
+    return days
+
+
+def prepare_data(data):
+    '''
+    Creates a dictionary for the amount of talks per tag (barchart)
+    and for the amount of talks per day per tag (calendar)
+    '''
+
+    bar_dict = {}
+    calendar_dict = {}
+
+    for tag in data:
+
+        timestamps = data[tag]
+
+        # Add the number of talks to the bar dictionary
+        bar_dict[tag] = len(timestamps)
+
+        days = get_days(timestamps)
+
+        tag_dict = {}
+        for day in days:
+            tag_dict[day] = 0
+
+        for timestamp in timestamps:
+            day = unix_to_date(timestamp)
+            if day in tag_dict:
+                tag_dict[day] += 1
+            else:
+                exit("Error: Day of timestamp not found in days")
+
+        # Add the number of talks per day to the calendar dictionary
+        calendar_dict[tag] = tag_dict
+
+    return {"barchart" : bar_dict, "calendar" : calendar_dict}
 
 
 def save_json(dict):
@@ -100,8 +151,11 @@ if __name__ == "__main__":
     # Open the csv and convert it to a pandas dataframe object
     data_df = open_csv()
 
-    # Preprocess the dataframe
-    data_dict = preprocess_data(data_df)
+    # Preprocess the dataframe to a dictionary of timestamps per tag
+    processed_data = preprocess_data(data_df)
+
+    # Convert the data into a useful dictionary
+    data_dict = prepare_data(processed_data)
 
     # Save the data as a json file
     save_json(data_dict)
