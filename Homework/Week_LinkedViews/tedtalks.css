@@ -10,7 +10,7 @@
      fill: crimson;
 }
 
-.tooltip {
+.barTooltip {
      color: white;
      position: absolute;
      text-align: center;
@@ -23,17 +23,25 @@
      pointer-events: none;
 }
 
+.calTooltip {
+     color: white;
+     position: absolute;
+     text-align: center;
+     width: 75px;
+     height: 15px;
+     padding: 2px;
+     font: 12px sans-serif;
+     background: rgba(0,0,0,.8);
+     border: 2px solid black;
+     pointer-events: none;
+}
+
 .day {
-  fill: #fff;
-  stroke: #ccc;
+    stroke: #ccc;
 }
 
 .month {
-  fill: none;
-  stroke: #000;
-  stroke-width: 2px;
-}
-
-.day2012 {
-    fill: #1c4;
+    fill: none;
+    stroke: #000;
+    stroke-width: 2px;
 }
