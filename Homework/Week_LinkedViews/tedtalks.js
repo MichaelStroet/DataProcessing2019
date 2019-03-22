@@ -28,8 +28,9 @@ function visualisationTedTalks(datasets) {
     var totalWidth = 1100,
         totalHeight = 4000;
 
-    var svg = d3.select("body")
-        .append("svg")
+    var body = d3.select("body")
+
+    var svg = body.append("svg")
         .attr("width", totalWidth)
         .attr("height", totalHeight)
         .attr("class", "visualisation");
@@ -50,10 +51,9 @@ function visualisationTedTalks(datasets) {
         .attr("height", barHeight);
 
     // Define a "div" for the barchart tooltip
-    d3.select("body")
-        .append('div')
-        .attr('class', 'barTooltip')
-        .style('opacity', 0);
+    body.append("div")
+        .attr("class", "barTooltip")
+        .style("opacity", 0);
 
     // Define a "g" for the calendar view
     svg.append("g")
@@ -62,15 +62,15 @@ function visualisationTedTalks(datasets) {
         .attr("transform", `translate(${barWidth}, 0)`);
 
     // Define a "div" for the calendar tooltip
-    d3.select("body")
-        .append('div')
-        .attr('class', 'calTooltip')
-        .style('opacity', 0);
+    body.append("div")
+        .attr("class", "calTooltip")
+        .style("opacity", 0);
 
     var firstYear = 2000,
         lastYear = 2017;
+    var colourInterpolator = d3.interpolateViridis
 
-    barChart(datasets, barWidth, barHeight, firstYear, lastYear);
-    enterCalendar(datasets["calendar"], calWidth, firstYear, lastYear);
+    barChart(datasets, barWidth, barHeight, firstYear, lastYear, colourInterpolator);
+    enterCalendar(datasets["calendar"], calWidth, firstYear, lastYear, colourInterpolator);
 
 };

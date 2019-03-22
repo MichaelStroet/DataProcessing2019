@@ -2,7 +2,7 @@
 // Student number: 11293284
 
 // http://bl.ocks.org/GuilloOme/75f51c64c2132899d58d4cd6a23506d3
-function enterCalendar(dataset, calWidth, firstYear, lastYear) {
+function enterCalendar(dataset, calWidth, firstYear, lastYear, colourInterpolator) {
     /*
     Draws an interactive calendar of the given data
     */
@@ -58,10 +58,11 @@ function enterCalendar(dataset, calWidth, firstYear, lastYear) {
             return year;
         });
 
+
     legendMaxValue = d3.max(Object.values(dataset[tag]))
     var colourScale = d3.scaleSequential()
         .domain([legendMaxValue, 0])
-        .interpolator(d3.interpolateViridis);
+        .interpolator(colourInterpolator);
 
     var pickColour = function(value) {
         if (value == undefined || value == 0) {
@@ -211,7 +212,7 @@ function monthPath(t0, cellSize) {
 };
 
 
-function updateCalendar(dataset, newTag, firstYear, lastYear) {
+function updateCalendar(dataset, newTag, firstYear, lastYear, colourInterpolator) {
 
     var transDuration = 500;
     var format = d3.timeFormat("%Y-%m-%d");
@@ -224,7 +225,7 @@ function updateCalendar(dataset, newTag, firstYear, lastYear) {
 
     var colourScale = d3.scaleSequential()
         .domain([d3.max(Object.values(dataset[newTag])), 0])
-        .interpolator(d3.interpolateInferno);
+        .interpolator(colourInterpolator);
 
     var pickColour = function(value) {
         if (value == undefined || value == 0) {

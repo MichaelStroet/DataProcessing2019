@@ -1,7 +1,7 @@
 // Name: Michael Stroet
 // Student number: 11293284
 
-function barChart(datasets, svgWidth, svgHeight, firstYear, lastYear) {
+function barChart(datasets, svgWidth, svgHeight, firstYear, lastYear, colourInterpolator) {
     /*
     Draws an interactive barchart of the given data
     */
@@ -19,6 +19,48 @@ function barChart(datasets, svgWidth, svgHeight, firstYear, lastYear) {
 
     var datasetBar = datasets["barchart"];
 
+    var orders = ["Descending", "Ascending", "Alphabetical"],
+        orderedTags = {};
+
+    // Create a dropdown
+    var orderMenu = d3.select("#orderDropdown")
+
+    orderMenu.append("select")
+        .selectAll("option")
+        .data(orders)
+        .enter()
+        .append("option")
+        .attr("value", function(order){
+            return order;
+        })
+        .text(function(order){
+            return order;
+        });
+
+    var descendingDataset = Object.entries(datasetBar).sort(function(a, b) {
+        aValue = a[1];
+        bValue = b[1];
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+    });
+
+    var descendingTags = [];
+    for (var i = 0; i < descendingDataset.length; i++) {
+        descendingTags.push(descendingDataset[i][0]);
+    };
+    orderedTags[orders[0]] = descendingTags;
+
+    var ascendingDatabase = Object.entries(datasetBar).sort(function(a, b) {
+        aValue = a[1];
+        bValue = b[1];
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+    });
+
+    var ascendingTags = [];
+    for (var i = 0; i < ascendingDatabase.length; i++) {
+        ascendingTags.push(ascendingDatabase[i][0]);
+    };
+    orderedTags[orders[1]] = ascendingTags;
+
     var alphabeticalDataset = Object.entries(datasetBar).sort(function(a, b) {
         a = a[0].toLowerCase();
         b = b[0].toLowerCase();
@@ -29,17 +71,7 @@ function barChart(datasets, svgWidth, svgHeight, firstYear, lastYear) {
     for (var i = 0; i < alphabeticalDataset.length; i++) {
         alphabeticalTags.push(alphabeticalDataset[i][0]);
     };
-
-    var sortedDataset = Object.entries(datasetBar).sort(function(a, b) {
-        aValue = a[1];
-        bValue = b[1];
-        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
-    });
-
-    var sortedTags = [];
-    for (var i = 0; i < sortedDataset.length; i++) {
-        sortedTags.push(sortedDataset[i][0]);
-    };
+    orderedTags[orders[2]] = alphabeticalTags;
 
     // Select the "g" of the barchart
     var g = d3.select("#gBarchart");
@@ -63,7 +95,7 @@ function barChart(datasets, svgWidth, svgHeight, firstYear, lastYear) {
     // Scaling function for y values
     var yScale = d3.scaleBand()
         .range([0, chartHeight])
-        .domain(sortedTags)
+        .domain(orderedTags[orders[0]])
         .padding(0.2);
 
     // Draw x-axis
@@ -89,7 +121,8 @@ function barChart(datasets, svgWidth, svgHeight, firstYear, lastYear) {
 
     // Draw y-axis
     barChart.append("g").call(d3.axisLeft(yScale))
-        .attr("class", "axis");
+        .attr("class", "axis")
+        .attr("id", "tags");
 
     // Draw title
     svg.append("text")
@@ -116,16 +149,17 @@ function barChart(datasets, svgWidth, svgHeight, firstYear, lastYear) {
             return xScale(data[1]);
         })
         .on("click", function(values) {
-            console.log(`Clicked on '${values[0]}', with ${values[1]} talks`);
-            return updateCalendar(datasets["calendar"], values[0], firstYear, lastYear);
+            console.log(`Clicked on "${values[0]}", with ${values[1]} talks`);
+            console.log(datasets["calendar"][values[0]])
+            return updateCalendar(datasets["calendar"], values[0], firstYear, lastYear, colourInterpolator);
         })
         .on("mousemove", function(data) {
             tooltip
                 .transition()
                 .duration(50)
-                .style('opacity', 0.9);
+                .style("opacity", 0.9);
             tooltip
-                .html(data[0] + '<br/>' + data[1] + " talks")
+                .html(data[0] + "<br/>" + data[1] + " talks")
                 .style("left", (d3.event.pageX + 15) + "px")
                 .style("top", (d3.event.pageY - 15) + "px");
             })
@@ -133,7 +167,45 @@ function barChart(datasets, svgWidth, svgHeight, firstYear, lastYear) {
             tooltip
                 .transition()
                 .duration(500)
-                .style('opacity', 0);
+                .style("opacity", 0);
     });
+
+    // Run update function when dropdown selection changes
+ 	orderMenu.on("change", function(){
+
+ 		// Find which fruit was selected from the dropdown
+ 		var order = d3.select(this)
+            .select("select")
+            .property("value")
+
+        // Run update function with the selected fruit
+        updateBarchart(datasetBar, order, orderedTags, chartHeight)
+    });
+
+};
+
+function updateBarchart(datasetBar, order, orderedTags, chartHeight) {
+
+    var transDuration = 500;
+
+    var g = d3.select("#gBarchart").transition();
+
+    var newTagScale = d3.scaleBand()
+        .range([0, chartHeight])
+        .domain(orderedTags[order])
+
+    g.selectAll(".bar")
+        .duration(transDuration)
+        .attr("y", function(data) {
+            return newTagScale(data[0]);
+        });
+
+    // Draw y-axis
+    var tagTicks = g.select("#tags").selectAll(".tick")
+
+    tagTicks.duration(transDuration)
+        .attr("transform", function(data) {
+            return `translate(0, ${newTagScale(data) + newTagScale.bandwidth() / 2})`;
+        });
 
 };
