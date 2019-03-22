@@ -137,7 +137,9 @@ function enterCalendar(dataset, calWidth, firstYear, lastYear, colourInterpolato
     legend.append("g")
         .attr("class", "axis")
         .attr("id", "legendAxis")
-        .call(d3.axisBottom(legendScale))
+        .call(d3.axisBottom(legendScale)
+            .ticks(legendMaxValue)
+        )
         .attr("transform", `translate(${legendPadding.left}, ${gradientHeight + legendPadding.top})`);
 
     // Draw x label
@@ -271,5 +273,7 @@ function updateCalendar(dataset, newTag, firstYear, lastYear, calWidth, colourIn
     // Draw x-axis
     g.select("#legendAxis")
         .duration(transDuration)
-        .call(d3.axisBottom(legendScale))
+        .call(d3.axisBottom(legendScale)
+            .ticks(legendMaxValue)
+        )
 };

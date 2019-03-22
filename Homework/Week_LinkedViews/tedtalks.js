@@ -68,7 +68,7 @@ function visualisationTedTalks(datasets) {
 
     var firstYear = 2000,
         lastYear = 2017;
-    var colourInterpolator = d3.interpolateViridis
+    var colourInterpolator = d3.interpolateMagma
 
     barChart(datasets, barWidth, barHeight, firstYear, lastYear, calWidth, colourInterpolator);
     enterCalendar(datasets["calendar"], calWidth, firstYear, lastYear, colourInterpolator);
