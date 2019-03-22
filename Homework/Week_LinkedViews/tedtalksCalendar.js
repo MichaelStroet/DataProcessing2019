@@ -134,8 +134,10 @@ function enterCalendar(dataset, calWidth, firstYear, lastYear, colourInterpolato
         .style("fill", "url(#calendarGradient)");
 
     // Draw x-axis
-    legend.append("g").call(d3.axisBottom(legendScale))
+    legend.append("g")
         .attr("class", "axis")
+        .attr("id", "legendAxis")
+        .call(d3.axisBottom(legendScale))
         .attr("transform", `translate(${legendPadding.left}, ${gradientHeight + legendPadding.top})`);
 
     // Draw x label
@@ -212,7 +214,7 @@ function monthPath(t0, cellSize) {
 };
 
 
-function updateCalendar(dataset, newTag, firstYear, lastYear, colourInterpolator) {
+function updateCalendar(dataset, newTag, firstYear, lastYear, calWidth, colourInterpolator) {
 
     var transDuration = 500;
     var format = d3.timeFormat("%Y-%m-%d");
@@ -223,8 +225,10 @@ function updateCalendar(dataset, newTag, firstYear, lastYear, colourInterpolator
         .duration(transDuration)
         .text(`Calendar title {${newTag}}`);
 
+    var legendMaxValue = d3.max(Object.values(dataset[newTag]));
+
     var colourScale = d3.scaleSequential()
-        .domain([d3.max(Object.values(dataset[newTag])), 0])
+        .domain([legendMaxValue, 0])
         .interpolator(colourInterpolator);
 
     var pickColour = function(value) {
@@ -238,5 +242,34 @@ function updateCalendar(dataset, newTag, firstYear, lastYear, colourInterpolator
         .duration(transDuration)
         .attr("fill", function(date) {
             return pickColour(dataset[newTag][date]);
-        })
+        });
+
+    var padding = {
+        top  : 120,
+        left  : 60,
+        right : 20,
+        bottom: 10
+    };
+
+    var legendWidth = calWidth,
+        legendHeight = padding.top,
+        legendPadding = {
+            top   : padding.top / 1.5,
+            right : padding.right + 5,
+            bottom: 25,
+            left  : padding.left + 5
+        };
+
+    var gradientWidth = legendWidth - legendPadding.right - legendPadding.left;
+    var gradientHeight = legendHeight - legendPadding.top - legendPadding.bottom;
+
+    // Scaling function for x values
+    var legendScale = d3.scaleLinear()
+        .range([0, gradientWidth - 1])
+        .domain([0, legendMaxValue]);
+
+    // Draw x-axis
+    g.select("#legendAxis")
+        .duration(transDuration)
+        .call(d3.axisBottom(legendScale))
 };

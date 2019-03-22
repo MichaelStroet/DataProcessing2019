@@ -70,7 +70,7 @@ function visualisationTedTalks(datasets) {
         lastYear = 2017;
     var colourInterpolator = d3.interpolateViridis
 
-    barChart(datasets, barWidth, barHeight, firstYear, lastYear, colourInterpolator);
+    barChart(datasets, barWidth, barHeight, firstYear, lastYear, calWidth, colourInterpolator);
     enterCalendar(datasets["calendar"], calWidth, firstYear, lastYear, colourInterpolator);
 
 };

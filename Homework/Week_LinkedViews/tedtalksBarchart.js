@@ -1,7 +1,7 @@
 // Name: Michael Stroet
 // Student number: 11293284
 
-function barChart(datasets, svgWidth, svgHeight, firstYear, lastYear, colourInterpolator) {
+function barChart(datasets, svgWidth, svgHeight, firstYear, lastYear, calWidth, colourInterpolator) {
     /*
     Draws an interactive barchart of the given data
     */
@@ -151,7 +151,7 @@ function barChart(datasets, svgWidth, svgHeight, firstYear, lastYear, colourInte
         .on("click", function(values) {
             console.log(`Clicked on "${values[0]}", with ${values[1]} talks`);
             console.log(datasets["calendar"][values[0]])
-            return updateCalendar(datasets["calendar"], values[0], firstYear, lastYear, colourInterpolator);
+            return updateCalendar(datasets["calendar"], values[0], firstYear, lastYear, calWidth, colourInterpolator);
         })
         .on("mousemove", function(data) {
             tooltip
