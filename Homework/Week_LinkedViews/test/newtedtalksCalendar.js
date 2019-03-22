@@ -58,17 +58,25 @@ function enterCalendar(dataset, calWidth, firstYear, lastYear, colourInterpolato
             return year;
         });
 
+    var talkAmounts = [];
+    Object.values(dataset[tag]).forEach(function(talk){
+        talkAmounts.push(talk["talks"]);
+    });
 
-    legendMaxValue = d3.max(Object.values(dataset[tag]))
+    var legendMaxValue = d3.max(talkAmounts);
+
     var colourScale = d3.scaleSequential()
         .domain([legendMaxValue, 0])
         .interpolator(colourInterpolator);
 
-    var pickColour = function(value) {
-        if (value == undefined || value == 0) {
+    var pickColour = function(data) {
+        if (data == undefined || data == 0) {
             return "#ffffff";
         };
-        return colourScale(value);
+        if (typeof(data) == "number") {
+            return colourScale(data);
+        };
+        return colourScale(data["talks"]);
     };
 
     var legendWidth = calWidth,
@@ -102,7 +110,7 @@ function enterCalendar(dataset, calWidth, firstYear, lastYear, colourInterpolato
         .attr("y1", "0%")
         .attr("x2", "100%")
         .attr("y2", "0%");
-
+    console.log(pickColour(0.125 * legendMaxValue));
     //Append multiple color stops by using D3's data/enter step
     linearGradient.selectAll("stop")
         .data([
@@ -227,18 +235,26 @@ function updateCalendar(dataset, newTag, firstYear, lastYear, calWidth, colourIn
         .duration(transDuration)
         .text(`Calendar title {${newTag}}`);
 
-    var legendMaxValue = d3.max(Object.values(dataset[newTag]));
+    var talkAmounts = [];
+    Object.values(dataset[newTag]).forEach(function(talk){
+        talkAmounts.push(talk["talks"]);
+    });
+
+    var legendMaxValue = d3.max(talkAmounts);
 
     var colourScale = d3.scaleSequential()
         .domain([legendMaxValue, 0])
         .interpolator(colourInterpolator);
 
-    var pickColour = function(value) {
-        if (value == undefined || value == 0) {
-            return "#ffffff";
+        var pickColour = function(data) {
+            if (data == undefined || data == 0) {
+                return "#ffffff";
+            };
+            if (typeof(data) == "number") {
+                return colourScale(data);
+            };
+            return colourScale(data["talks"]);
         };
-        return colourScale(value);
-    };
 
     var rect = g.selectAll(".day")
         .duration(transDuration)

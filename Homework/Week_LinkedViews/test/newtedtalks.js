@@ -15,7 +15,8 @@ window.onload = function() {
         var datasets = response[0];
 
         visualisationTedTalks(datasets);
-
+        console.log(datasets);
+        
         // Catch errors
         }).catch(function(e){
             throw(e);

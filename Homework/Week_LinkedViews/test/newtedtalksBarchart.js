@@ -150,7 +150,6 @@ function barChart(datasets, svgWidth, svgHeight, firstYear, lastYear, calWidth, 
         })
         .on("click", function(values) {
             console.log(`Clicked on "${values[0]}", with ${values[1]} talks`);
-            console.log(datasets["calendar"][values[0]])
             return updateCalendar(datasets["calendar"], values[0], firstYear, lastYear, calWidth, colourInterpolator);
         })
         .on("mousemove", function(data) {
