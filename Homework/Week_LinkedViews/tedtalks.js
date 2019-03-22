@@ -37,28 +37,35 @@ function visualisationTedTalks(datasets) {
         barHeight = totalHeight,
         calWidth = totalWidth - barWidth;
 
-    svg.append("g")
+    // Define a "g" for the barchart
+    var gBar = svg.append("g")
         .attr("class", "gBarchart")
-        .attr("transform", `translate(0, 30)`);
+        .attr("transform", `translate(0, 0)`);
 
-    // Define a "div" for the tooltip
+    // Define a "svg" for the barchart
+    gBar.append("svg")
+        .attr("width", barWidth)
+        .attr("height", barHeight);
+
+    // Define a "div" for the barchart tooltip
     d3.select("body")
         .append('div')
         .attr('class', 'barTooltip')
         .style('opacity', 0);
 
+    // Define a "g" for the calendar view
     svg.append("g")
         .attr("class", "gCalendar")
         .attr("transform", `translate(${barWidth}, 0)`);
 
-    // Define a "div" for the tooltip
+    // Define a "div" for the calendar tooltip
     d3.select("body")
         .append('div')
         .attr('class', 'calTooltip')
         .style('opacity', 0);
 
-    var firstYear = 1984,
-        lastYear = 2018;
+    var firstYear = 2000,
+        lastYear = 2017;
 
     barChart(datasets, barWidth, barHeight, firstYear, lastYear);
     enterCalendar(datasets["calendar"], calWidth, firstYear, lastYear);
@@ -89,22 +96,30 @@ function barChart(datasets, svgWidth, svgHeight, firstYear, lastYear) {
         return a < b ? -1 : a > b ? 1 : 0;
     });
 
-    var alphabeticalKeys = Object.keys(datasetBar).sort(function(a, b) {
-        a = a.toLowerCase();
-        b = b.toLowerCase();
-        return a < b ? -1 : a > b ? 1 : 0;
+    var alphabeticalTags = [];
+    for (var i = 0; i < alphabeticalDataset.length; i++) {
+        alphabeticalTags.push(alphabeticalDataset[i][0]);
+    };
+
+    var sortedDataset = Object.entries(datasetBar).sort(function(a, b) {
+        aValue = a[1];
+        bValue = b[1];
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
     });
+
+    var sortedTags = [];
+    for (var i = 0; i < sortedDataset.length; i++) {
+        sortedTags.push(sortedDataset[i][0]);
+    };
 
     // Select the "g" of the barchart
     var g = d3.select(".gBarchart");
 
-    // Define a "div" for the tooltip
-    var tooltip = d3.select(".barTooltip");
+    // Select the "svg" for drawing the figure
+    var svg = g.select("svg")
 
-    // Define a "svg" for drawing the figure
-    var svg = g.append("svg")
-        .attr("width", svgWidth)
-        .attr("height", svgHeight);
+    // Select ther "div" for the tooltip
+    var tooltip = d3.select(".barTooltip");
 
     // Define a "g" for the barchart
     var barChart = svg.append("g")
@@ -119,7 +134,8 @@ function barChart(datasets, svgWidth, svgHeight, firstYear, lastYear) {
     // Scaling function for y values
     var yScale = d3.scaleBand()
         .range([0, chartHeight])
-        .domain(alphabeticalKeys)
+        .domain(sortedTags)
+        .padding(0.2);
 
     // Draw x-axis
     barChart.append("g").call(d3.axisTop(xScale))
@@ -146,27 +162,17 @@ function barChart(datasets, svgWidth, svgHeight, firstYear, lastYear) {
     barChart.append("g").call(d3.axisLeft(yScale))
         .attr("class", "axis");
 
-    // // Draw y label
-    // svg.append("text")
-    //     .attr("class", "label")
-    //     .attr("x", - (chartHeight / 2) - padding.top)
-    //     .attr("y", padding.left / 5)
-    //     .attr("transform", "rotate(270)")
-    //     .attr("text-anchor", "middle")
-    //     .text("Y label");
-
     // Draw title
     svg.append("text")
         .attr("class", "title")
-        .attr("id", "remove")
         .attr("x", chartWidth / 2 + padding.left)
-        .attr("y", padding.top / 5)
+        .attr("y", padding.top / 4)
         .attr("text-anchor", "middle")
         .text("Title");
 
     // Define a "g" for each bar
     var bars = barChart.selectAll(".bar")
-        .data(alphabeticalDataset)
+        .data(sortedDataset)
         .enter();
 
     // Draw bars with tooltips of their value when mousing over them
@@ -193,8 +199,8 @@ function barChart(datasets, svgWidth, svgHeight, firstYear, lastYear) {
                 .style('opacity', 0.9);
             tooltip
                 .html(data[0] + '<br/>' + data[1] + " talks")
-                .style("left", (d3.event.pageX + 5) + "px")
-                .style("top", (d3.event.pageY - 40) + "px");
+                .style("left", (d3.event.pageX + 15) + "px")
+                .style("top", (d3.event.pageY - 15) + "px");
             })
         .on("mouseout", () => {
             tooltip
@@ -215,10 +221,10 @@ function enterCalendar(dataset, svgWidth, firstYear, lastYear) {
     var tag = "technology";
 
     var padding = {
+        top  : 80,
         left  : 60,
         right : 20,
-        top   : 10,
-        bottom: 0
+        bottom: 10
     };
 
     // Calculate the size of each calendar based on it's width
@@ -226,7 +232,7 @@ function enterCalendar(dataset, svgWidth, firstYear, lastYear) {
         weeksPerYear = 53;
 
     cellSize = (svgWidth - (padding.left + padding.right)) / weeksPerYear;
-    var yearHeight = cellSize * daysPerWeek + padding.top;
+    var yearHeight = cellSize * daysPerWeek + padding.bottom;
 
     var format = d3.timeFormat("%Y-%m-%d");
 
@@ -235,28 +241,60 @@ function enterCalendar(dataset, svgWidth, firstYear, lastYear) {
 
     // Select the tooltip div
     var tooltip = d3.select(".calTooltip");
+    // Draw title
+    g.append("text")
+        .attr("class", "title")
+        .attr("x", svgWidth / 2)
+        .attr("y", padding.top / 4)
+        .attr("text-anchor", "middle")
+        .text(`Calendar title {${tag}}`);
 
     var svg = g.selectAll("svg")
-        .data(d3.range(firstYear, lastYear))
+        .data(d3.range(firstYear, lastYear + 1))
         .enter()
         .append("g")
         .attr("transform", function(data) {
-            console.log(data);
-            return `translate(0, ${(data - firstYear) * yearHeight + padding.top + padding.bottom})`;
+            return `translate(0, ${(lastYear - data) * yearHeight + padding.top})`;
         })
         .append("svg")
+        .attr("class", "calendarYear")
         .attr("width", svgWidth)
         .attr("height", yearHeight)
-        .attr("class", "calendarYear")
         .append("g")
-        .attr("transform", `translate(${padding.left}, ${padding.top / 2})`);
+        .attr("transform", `translate(${padding.left}, ${padding.bottom / 2})`);
 
     svg.append("text")
-        .attr("transform", `translate(${-2 * cellSize}, ${(yearHeight - padding.top) / 2})`)
+        .attr("transform", `translate(${-2 * cellSize}, ${(yearHeight - padding.bottom) / 2})`)
         .style("text-anchor", "middle")
         .text(function(year) {
             return year;
         });
+
+    var colourScale = d3.scaleSequential()
+        .domain([d3.max(Object.values(dataset[tag])), 0])
+        .interpolator(d3.interpolateInferno);
+
+    var pickColour = function(value) {
+        if (value == undefined || value == 0) {
+            return "#ffffff";
+        };
+        return colourScale(value);
+    };
+
+    var legendWidth = svgWidth / 2,
+        legendHeight = padding.top / 3,
+        legendPadding = {
+            top   : 20,
+            right : padding.right,
+            bottom: padding.bottom,
+            left  : 5
+        };
+
+    var legend = g.append("g")
+        .attr("transform", `translate(${svgWidth / 2}, ${padding.top / 3})`)
+        .attr("class", "legend")
+        .attr("width", `${legendWidth}`)
+        .attr("height", `${legendHeight}`);
 
     var rect = svg.selectAll(".day")
         .data(function(year) { return d3.timeDays(new Date(year, 0, 1), new Date(year + 1, 0, 1)); })
@@ -265,24 +303,14 @@ function enterCalendar(dataset, svgWidth, firstYear, lastYear) {
         .attr("class", "day")
         .attr("width", cellSize)
         .attr("height", cellSize)
-        .attr("x", function(date) { return d3.timeWeek.count(d3.timeYear(date), date) * cellSize; })
-        .attr("y", function(date) { return date.getDay() * cellSize; })
+        .attr("x", function(date) {
+            return d3.timeWeek.count(d3.timeYear(date), date) * cellSize;
+        })
+        .attr("y", function(date) {
+            return date.getDay() * cellSize;
+        })
         .attr("fill", function(date) {
-            if (dataset[tag][format(date)] == undefined) {
-                return "#fff";
-            };
-            if (dataset[tag][format(date)] == 1) {
-                return "yellow";
-            };
-            if (dataset[tag][format(date)] <= 5) {
-                return "orange";
-            };
-            if (dataset[tag][format(date)] <=10) {
-                return "red";
-            };
-
-            return "darkred";
-
+            return pickColour(dataset[tag][format(date)]);
         })
         .datum(format)
         .on("mousemove", function(date) {
@@ -332,27 +360,29 @@ function monthPath(t0) {
 
 function updateCalendar(dataset, newTag, firstYear, lastYear) {
 
-    var transDuration = 750;
+    var transDuration = 1500;
     var format = d3.timeFormat("%Y-%m-%d");
 
-    var svg = d3.select(".visualisation").transition();
+    var g = d3.select(".gCalendar").transition();
 
-    var rect = svg.selectAll(".day")
+    g.select(".title")
+        .duration(transDuration)
+        .text(`Calendar title {${newTag}}`);
+
+    var colourScale = d3.scaleSequential()
+        .domain([d3.max(Object.values(dataset[newTag])), 0])
+        .interpolator(d3.interpolateInferno);
+
+    var pickColour = function(value) {
+        if (value == undefined || value == 0) {
+            return "#ffffff";
+        };
+        return colourScale(value);
+    };
+
+    var rect = g.selectAll(".day")
         .duration(transDuration)
         .attr("fill", function(date) {
-            if (dataset[newTag][date] == undefined) {
-                return "#fff";
-            };
-            if (dataset[newTag][date] == 1) {
-                return "yellow";
-            };
-            if (dataset[newTag][date] <= 5) {
-                return "orange";
-            };
-            if (dataset[newTag][date] <=10) {
-                return "red";
-            };
-
-            return "darkred";
-        });
+            return pickColour(dataset[newTag][date]);
+        })
 };
