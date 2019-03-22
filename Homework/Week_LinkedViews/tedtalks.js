@@ -22,6 +22,7 @@ window.onload = function() {
         });
     };
 
+
 function visualisationTedTalks(datasets) {
 
     var totalWidth = 1100,
@@ -39,7 +40,8 @@ function visualisationTedTalks(datasets) {
 
     // Define a "g" for the barchart
     var gBar = svg.append("g")
-        .attr("class", "gBarchart")
+        .attr("class", "container")
+        .attr("id", "gBarchart")
         .attr("transform", `translate(0, 0)`);
 
     // Define a "svg" for the barchart
@@ -55,7 +57,8 @@ function visualisationTedTalks(datasets) {
 
     // Define a "g" for the calendar view
     svg.append("g")
-        .attr("class", "gCalendar")
+        .attr("class", "container")
+        .attr("id", "gCalendar")
         .attr("transform", `translate(${barWidth}, 0)`);
 
     // Define a "div" for the calendar tooltip
@@ -72,6 +75,7 @@ function visualisationTedTalks(datasets) {
 
 };
 
+
 function barChart(datasets, svgWidth, svgHeight, firstYear, lastYear) {
     /*
     Draws an interactive barchart of the given data
@@ -79,7 +83,7 @@ function barChart(datasets, svgWidth, svgHeight, firstYear, lastYear) {
 
     // Dimensions for the scatterplot with padding on all sides
     var padding = {
-        top: 80,
+        top: 120,
         right: 0,
         bottom: 30,
         left: 130
@@ -113,7 +117,7 @@ function barChart(datasets, svgWidth, svgHeight, firstYear, lastYear) {
     };
 
     // Select the "g" of the barchart
-    var g = d3.select(".gBarchart");
+    var g = d3.select("#gBarchart");
 
     // Select the "svg" for drawing the figure
     var svg = g.select("svg")
@@ -211,8 +215,9 @@ function barChart(datasets, svgWidth, svgHeight, firstYear, lastYear) {
 
 };
 
+
 // http://bl.ocks.org/GuilloOme/75f51c64c2132899d58d4cd6a23506d3
-function enterCalendar(dataset, svgWidth, firstYear, lastYear) {
+function enterCalendar(dataset, calWidth, firstYear, lastYear) {
     /*
     Draws an interactive calendar of the given data
     */
@@ -221,7 +226,7 @@ function enterCalendar(dataset, svgWidth, firstYear, lastYear) {
     var tag = "technology";
 
     var padding = {
-        top  : 80,
+        top  : 120,
         left  : 60,
         right : 20,
         bottom: 10
@@ -231,47 +236,46 @@ function enterCalendar(dataset, svgWidth, firstYear, lastYear) {
     var daysPerWeek = 7,
         weeksPerYear = 53;
 
-    cellSize = (svgWidth - (padding.left + padding.right)) / weeksPerYear;
+    cellSize = (calWidth - (padding.left + padding.right)) / weeksPerYear;
     var yearHeight = cellSize * daysPerWeek + padding.bottom;
 
     var format = d3.timeFormat("%Y-%m-%d");
 
     // Select g of the calendar view
-    var g = d3.select(".gCalendar")
+    var g = d3.select("#gCalendar")
 
     // Select the tooltip div
     var tooltip = d3.select(".calTooltip");
+
     // Draw title
     g.append("text")
         .attr("class", "title")
-        .attr("x", svgWidth / 2)
+        .attr("x", calWidth / 2)
         .attr("y", padding.top / 4)
         .attr("text-anchor", "middle")
         .text(`Calendar title {${tag}}`);
 
-    var svg = g.selectAll("svg")
+    var cal = g.selectAll("svg")
         .data(d3.range(firstYear, lastYear + 1))
         .enter()
         .append("g")
-        .attr("transform", function(data) {
-            return `translate(0, ${(lastYear - data) * yearHeight + padding.top})`;
-        })
-        .append("svg")
         .attr("class", "calendarYear")
-        .attr("width", svgWidth)
+        .attr("transform", function(data) {
+            return `translate(${padding.left}, ${(lastYear - data) * yearHeight + padding.top})`;
+        })
+        .attr("width", calWidth)
         .attr("height", yearHeight)
-        .append("g")
-        .attr("transform", `translate(${padding.left}, ${padding.bottom / 2})`);
 
-    svg.append("text")
+    cal.append("text")
         .attr("transform", `translate(${-2 * cellSize}, ${(yearHeight - padding.bottom) / 2})`)
         .style("text-anchor", "middle")
         .text(function(year) {
             return year;
         });
 
+    legendMaxValue = d3.max(Object.values(dataset[tag]))
     var colourScale = d3.scaleSequential()
-        .domain([d3.max(Object.values(dataset[tag])), 0])
+        .domain([legendMaxValue, 0])
         .interpolator(d3.interpolateInferno);
 
     var pickColour = function(value) {
@@ -281,22 +285,82 @@ function enterCalendar(dataset, svgWidth, firstYear, lastYear) {
         return colourScale(value);
     };
 
-    var legendWidth = svgWidth / 2,
-        legendHeight = padding.top / 3,
+    var legendWidth = calWidth,
+        legendHeight = padding.top,
         legendPadding = {
-            top   : 20,
-            right : padding.right,
-            bottom: padding.bottom,
-            left  : 5
+            top   : padding.top / 1.5,
+            right : padding.right + 5,
+            bottom: 25,
+            left  : padding.left + 5
         };
 
-    var legend = g.append("g")
-        .attr("transform", `translate(${svgWidth / 2}, ${padding.top / 3})`)
-        .attr("class", "legend")
-        .attr("width", `${legendWidth}`)
-        .attr("height", `${legendHeight}`);
+    var gradientWidth = legendWidth - legendPadding.right - legendPadding.left;
+    var gradientHeight = legendHeight - legendPadding.top - legendPadding.bottom;
 
-    var rect = svg.selectAll(".day")
+    // Scaling function for x values
+    var legendScale = d3.scaleLinear()
+            .range([0, gradientWidth - 1])
+            .domain([0, legendMaxValue]);
+
+    // Append a defs (for definition) element to g
+    var defs = g.append("defs")
+        .attr("class", "linearGradient");
+
+    //A ppend a linearGradient element to the defs and give it a unique id
+    var linearGradient = defs.append("linearGradient")
+        .attr("id", "calendarGradient");
+
+    //Horizontal gradient
+    linearGradient
+        .attr("x1", "0%")
+        .attr("y1", "0%")
+        .attr("x2", "100%")
+        .attr("y2", "0%");
+
+    //Append multiple color stops by using D3's data/enter step
+    linearGradient.selectAll("stop")
+        .data([
+            {offset: "0%", color: `${pickColour(0)}`},
+            {offset: "12.5%", color: `${pickColour(0.125 * legendMaxValue)}`},
+            {offset: "25%", color: `${pickColour(0.25 * legendMaxValue)}`},
+            {offset: "37.5%", color: `${pickColour(0.375 * legendMaxValue)}`},
+            {offset: "50%", color: `${pickColour(0.5 * legendMaxValue)}`},
+            {offset: "62.5%", color: `${pickColour(0.625 * legendMaxValue)}`},
+            {offset: "75%", color: `${pickColour(0.75 * legendMaxValue)}`},
+            {offset: "87.5%", color: `${pickColour(0.875 * legendMaxValue)}`},
+            {offset: "100%", color: `${pickColour(legendMaxValue)}`}
+          ])
+        .enter()
+        .append("stop")
+        .attr("offset", function(data) { return data.offset; })
+        .attr("stop-color", function(data) { return data.color; });
+
+    var legend = g.append("g")
+        .attr("class", "legend")
+        .attr("width", legendWidth)
+        .attr("height", legendHeight)
+
+    legend.append("rect")
+        .attr("x", legendPadding.left)
+        .attr("y", legendPadding.top)
+        .attr("width", gradientWidth)
+        .attr("height", gradientHeight)
+        .style("fill", "url(#calendarGradient)");
+
+    // Draw x-axis
+    legend.append("g").call(d3.axisBottom(legendScale))
+        .attr("class", "axis")
+        .attr("transform", `translate(${legendPadding.left}, ${gradientHeight + legendPadding.top})`);
+
+    // Draw x label
+    legend.append("text")
+        .attr("class", "label")
+        .attr("x", legendWidth / 2)
+        .attr("y", legendPadding.top / 1.2)
+        .attr("text-anchor", "middle")
+        .text("Talks given per day");
+
+    var rect = cal.selectAll(".day")
         .data(function(year) { return d3.timeDays(new Date(year, 0, 1), new Date(year + 1, 0, 1)); })
         .enter()
         .append("rect")
@@ -330,7 +394,7 @@ function enterCalendar(dataset, svgWidth, firstYear, lastYear) {
                 .style('opacity', 0);
         });
 
-    svg.selectAll(".month")
+    cal.selectAll(".month")
         .data(function(data) {
             return d3.timeMonths(new Date(data, 0, 1), new Date(data + 1, 0, 1));
         })
@@ -339,6 +403,7 @@ function enterCalendar(dataset, svgWidth, firstYear, lastYear) {
         .attr("class", "month")
         .attr("d", monthPath);
 };
+
 
 function monthPath(t0) {
     /*
@@ -358,12 +423,13 @@ function monthPath(t0) {
         + "H" + (w0 + 1) * cellSize + "Z";
 };
 
+
 function updateCalendar(dataset, newTag, firstYear, lastYear) {
 
-    var transDuration = 1500;
+    var transDuration = 500;
     var format = d3.timeFormat("%Y-%m-%d");
 
-    var g = d3.select(".gCalendar").transition();
+    var g = d3.select("#gCalendar").transition();
 
     g.select(".title")
         .duration(transDuration)
