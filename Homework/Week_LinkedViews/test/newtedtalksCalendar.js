@@ -110,7 +110,7 @@ function enterCalendar(dataset, calWidth, firstYear, lastYear, colourInterpolato
         .attr("y1", "0%")
         .attr("x2", "100%")
         .attr("y2", "0%");
-    console.log(pickColour(0.125 * legendMaxValue));
+
     //Append multiple color stops by using D3's data/enter step
     linearGradient.selectAll("stop")
         .data([
@@ -163,28 +163,44 @@ function enterCalendar(dataset, calWidth, firstYear, lastYear, colourInterpolato
         .enter()
         .append("rect")
         .attr("class", "day")
+        .attr("id", `${tag}`)
         .attr("width", cellSize)
         .attr("height", cellSize)
+
         .attr("x", function(date) {
             return d3.timeWeek.count(d3.timeYear(date), date) * cellSize;
         })
         .attr("y", function(date) {
             return date.getDay() * cellSize;
         })
-        .attr("fill", function(date) {
-            return pickColour(dataset[tag][format(date)]);
-        })
         .datum(format)
+        .attr("fill", function(date) {
+            return pickColour(dataset[tag][date]);
+        })
+
+        .on("click", function(date) {
+            console.log(`Clicked on "${date}", with ${getTalks(dataset, d3.event.target.id, date)} talks`);
+            var thing = dataset[d3.event.target.id][date]["links"]
+            var txt = ""
+            thing.forEach(function(bit) {
+                txt += bit + "\n"
+            });
+
+            console.log(txt)
+            window.alert(txt);
+
+        })
         .on("mousemove", function(date) {
             tooltip
                 .transition()
                 .duration(50)
                 .style('opacity', 0.9);
+
             tooltip
-                .html(date)
+                .html(date + "<br/>" + getTalks(dataset, d3.event.target.id, date) + " talks")
                 .style("left", (d3.event.pageX + 5) + "px")
                 .style("top", (d3.event.pageY - 40) + "px");
-            })
+        })
         .on("mouseout", function() {
             tooltip
                 .transition()
@@ -204,6 +220,14 @@ function enterCalendar(dataset, calWidth, firstYear, lastYear, colourInterpolato
         });
 };
 
+function getTalks(dataset, tag, date) {
+    var talks = dataset[tag][date];
+
+    if (talks == undefined) {
+        return 0;
+    }
+    return talks["talks"];
+};
 
 function monthPath(t0, cellSize) {
     /*
@@ -258,6 +282,7 @@ function updateCalendar(dataset, newTag, firstYear, lastYear, calWidth, colourIn
 
     var rect = g.selectAll(".day")
         .duration(transDuration)
+        .attr("id", `${newTag}`)
         .attr("fill", function(date) {
             return pickColour(dataset[newTag][date]);
         });
