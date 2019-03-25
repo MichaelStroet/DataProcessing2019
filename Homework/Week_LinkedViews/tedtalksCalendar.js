@@ -58,17 +58,25 @@ function enterCalendar(dataset, calWidth, firstYear, lastYear, colourInterpolato
             return year;
         });
 
+    var talkAmounts = [];
+    Object.values(dataset[tag]).forEach(function(talk){
+        talkAmounts.push(talk["talks"]);
+    });
 
-    legendMaxValue = d3.max(Object.values(dataset[tag]))
+    var legendMaxValue = d3.max(talkAmounts);
+
     var colourScale = d3.scaleSequential()
         .domain([legendMaxValue, 0])
         .interpolator(colourInterpolator);
 
-    var pickColour = function(value) {
-        if (value == undefined || value == 0) {
+    var pickColour = function(data) {
+        if (data == undefined || data == 0) {
             return "#ffffff";
         };
-        return colourScale(value);
+        if (typeof(data) == "number") {
+            return colourScale(data);
+        };
+        return colourScale(data["talks"]);
     };
 
     var legendWidth = calWidth,
@@ -155,28 +163,44 @@ function enterCalendar(dataset, calWidth, firstYear, lastYear, colourInterpolato
         .enter()
         .append("rect")
         .attr("class", "day")
+        .attr("id", `${tag}`)
         .attr("width", cellSize)
         .attr("height", cellSize)
+
         .attr("x", function(date) {
             return d3.timeWeek.count(d3.timeYear(date), date) * cellSize;
         })
         .attr("y", function(date) {
             return date.getDay() * cellSize;
         })
-        .attr("fill", function(date) {
-            return pickColour(dataset[tag][format(date)]);
-        })
         .datum(format)
+        .attr("fill", function(date) {
+            return pickColour(dataset[tag][date]);
+        })
+
+        .on("click", function(date) {
+            console.log(`Clicked on "${date}", with ${getTalks(dataset, d3.event.target.id, date)} talks`);
+            var thing = dataset[d3.event.target.id][date]["links"]
+            var txt = ""
+            thing.forEach(function(bit) {
+                txt += bit + "\n"
+            });
+
+            console.log(txt)
+            window.alert(txt);
+
+        })
         .on("mousemove", function(date) {
             tooltip
                 .transition()
                 .duration(50)
                 .style('opacity', 0.9);
+
             tooltip
-                .html(date)
+                .html(date + "<br/>" + getTalks(dataset, d3.event.target.id, date) + " talks")
                 .style("left", (d3.event.pageX + 5) + "px")
                 .style("top", (d3.event.pageY - 40) + "px");
-            })
+        })
         .on("mouseout", function() {
             tooltip
                 .transition()
@@ -194,6 +218,15 @@ function enterCalendar(dataset, calWidth, firstYear, lastYear, colourInterpolato
         .attr("d", function(data) {
             return monthPath(data, cellSize);
         });
+};
+
+
+function getTalks(dataset, tag, date) {
+    var talks = dataset[tag][date];
+    if (talks == undefined) {
+        return 0;
+    }
+    return talks["talks"];
 };
 
 
@@ -227,21 +260,30 @@ function updateCalendar(dataset, newTag, firstYear, lastYear, calWidth, colourIn
         .duration(transDuration)
         .text(`Calendar title {${newTag}}`);
 
-    var legendMaxValue = d3.max(Object.values(dataset[newTag]));
+    var talkAmounts = [];
+    Object.values(dataset[newTag]).forEach(function(talk){
+        talkAmounts.push(talk["talks"]);
+    });
+
+    var legendMaxValue = d3.max(talkAmounts);
 
     var colourScale = d3.scaleSequential()
         .domain([legendMaxValue, 0])
         .interpolator(colourInterpolator);
 
-    var pickColour = function(value) {
-        if (value == undefined || value == 0) {
-            return "#ffffff";
+        var pickColour = function(data) {
+            if (data == undefined || data == 0) {
+                return "#ffffff";
+            };
+            if (typeof(data) == "number") {
+                return colourScale(data);
+            };
+            return colourScale(data["talks"]);
         };
-        return colourScale(value);
-    };
 
     var rect = g.selectAll(".day")
         .duration(transDuration)
+        .attr("id", `${newTag}`)
         .attr("fill", function(date) {
             return pickColour(dataset[newTag][date]);
         });
