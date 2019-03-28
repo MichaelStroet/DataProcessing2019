@@ -1,31 +1,69 @@
 // Name: Michael Stroet
 // Student number: 11293284
 
+//
+// WILDCARD GEBRUIKT
+//
+
 function barChart(datasets, firstYear, lastYear, colourInterpolator) {
     /*
     Draws an interactive barchart of the given data
     */
 
-    // Dimensions for the scatterplot with padding on all sides
-    var padding = {
-        top: 120,
-        right: 0 + 50,
-        bottom: 30,
-        left: 180
-    };
-
-    var svgWidth = document.getElementById("barchart").clientWidth;
-    var svgHeight = document.getElementById("barchart").clientHeight;
-
-    var chartWidth = svgWidth - padding.left - padding.right;
-    var chartHeight = svgHeight - padding.top - padding.bottom;
-
+    // Isolate the barchart dataset from the datasets
     var datasetBar = datasets["barchart"];
 
-    var orders = ["Afnemend", "Toenemend", "Alfabetisch"],
-        orderedTags = {};
+    // The different ordering options for the barchart (descending, ascending, alphabetical)
+    var orders = ["Afnemend", "Toenemend", "Alfabetisch"];
 
-    // Create a dropdown
+    // Sort the dataset in a descending order
+    var descendingDataset = Object.entries(datasetBar).sort(function(a, b) {
+        aValue = a[1];
+        bValue = b[1];
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+    });
+
+    // Get all sorted tags from the sorted dataset
+    var descendingTags = [];
+    for (var i = 0; i < descendingDataset.length; i++) {
+        descendingTags.push(descendingDataset[i][0]);
+    };
+
+    // Sort the dataset in an ascending order
+    var ascendingDatabase = Object.entries(datasetBar).sort(function(a, b) {
+        aValue = a[1];
+        bValue = b[1];
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+    });
+
+    // Get all sorted tags from the sorted dataset
+    var ascendingTags = [];
+    for (var i = 0; i < ascendingDatabase.length; i++) {
+        ascendingTags.push(ascendingDatabase[i][0]);
+    };
+
+    // Sort the dataset in an alphabetical order
+    var alphabeticalDataset = Object.entries(datasetBar).sort(function(a, b) {
+        a = a[0].toLowerCase();
+        b = b[0].toLowerCase();
+        return a < b ? -1 : a > b ? 1 : 0;
+    });
+
+    // Get all sorted tags from the sorted dataset
+    var alphabeticalTags = [];
+    for (var i = 0; i < alphabeticalDataset.length; i++) {
+        alphabeticalTags.push(alphabeticalDataset[i][0]);
+    };
+
+    // Dictionary for the different ordened version of the barchart
+    var orderedTags = {};
+
+    // Add all the sorted tags to the dictionary
+    orderedTags[orders[0]] = descendingTags;
+    orderedTags[orders[1]] = ascendingTags;
+    orderedTags[orders[2]] = alphabeticalTags;
+
+    // Create a dropdown menu for the different orders
     var orderMenu = d3.select("#orderDropdown")
 
     orderMenu.append("select")
@@ -40,46 +78,24 @@ function barChart(datasets, firstYear, lastYear, colourInterpolator) {
             return order;
         });
 
-    var descendingDataset = Object.entries(datasetBar).sort(function(a, b) {
-        aValue = a[1];
-        bValue = b[1];
-        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
-    });
-
-    var descendingTags = [];
-    for (var i = 0; i < descendingDataset.length; i++) {
-        descendingTags.push(descendingDataset[i][0]);
+    // Padding for the barchart
+    var padding = {
+        top: 120,
+        right: 50,
+        bottom: 30,
+        left: 180
     };
-    orderedTags[orders[0]] = descendingTags;
 
-    var ascendingDatabase = Object.entries(datasetBar).sort(function(a, b) {
-        aValue = a[1];
-        bValue = b[1];
-        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-    });
+    var svgWidth = document.getElementById("barchart").clientWidth;
+    var svgHeight = document.getElementById("barchart").clientHeight;
 
-    var ascendingTags = [];
-    for (var i = 0; i < ascendingDatabase.length; i++) {
-        ascendingTags.push(ascendingDatabase[i][0]);
-    };
-    orderedTags[orders[1]] = ascendingTags;
-
-    var alphabeticalDataset = Object.entries(datasetBar).sort(function(a, b) {
-        a = a[0].toLowerCase();
-        b = b[0].toLowerCase();
-        return a < b ? -1 : a > b ? 1 : 0;
-    });
-
-    var alphabeticalTags = [];
-    for (var i = 0; i < alphabeticalDataset.length; i++) {
-        alphabeticalTags.push(alphabeticalDataset[i][0]);
-    };
-    orderedTags[orders[2]] = alphabeticalTags;
+    var chartWidth = svgWidth - padding.left - padding.right;
+    var chartHeight = svgHeight - padding.top - padding.bottom;
 
     // Select the "svg" for the barchart
     var svgBarchart = d3.select("#svgBarchart")
 
-    // Select ther "div" for the tooltip
+    // Select the "div" for the tooltip
     var tooltip = d3.select(".barTooltip");
 
     // Define a "g" for the barchart
@@ -132,7 +148,7 @@ function barChart(datasets, firstYear, lastYear, colourInterpolator) {
         .attr("text-anchor", "middle")
         .text("Het gebruik van thema's in TEDtalks");
 
-    // Draw bars with tooltips of their value when mousing over them
+    // Draw bars with tooltips and updating the calendar when pressed
     var bars = barChart.selectAll(".bar")
         .data(Object.entries(datasetBar))
         .enter()
@@ -169,40 +185,46 @@ function barChart(datasets, firstYear, lastYear, colourInterpolator) {
                 .style("opacity", 0);
     });
 
-    // Run update function when dropdown selection changes
+    // Update the order of the barchart with the chosen order
  	orderMenu.on("change", function(){
 
- 		// Find which order was selected from the dropdown
+ 		// Find which order was selected from the dropdown menu
  		var order = d3.select(this)
             .select("select")
             .property("value")
 
-        // Run update function
+        // Update the barchart
         updateBarchart(datasetBar, order, orderedTags, chartHeight)
     });
 
 };
 
 function updateBarchart(datasetBar, order, orderedTags, chartHeight) {
+    /*
+    * Updates the barchart with the new order
+    */
 
     var transDuration = 500;
 
     // Select the "svg" for the barchart
     var svgBarchart = d3.select("#svgBarchart").transition();
 
+    // Create the new tag scale for the y axis
     var newTagScale = d3.scaleBand()
         .range([0, chartHeight])
         .domain(orderedTags[order])
 
+    // Update all bars
     svgBarchart.selectAll(".bar")
         .duration(transDuration)
         .attr("y", function(data) {
             return newTagScale(data[0]);
         });
 
-    // Draw y-axis
+    // Select all y-axis ticks
     var tagTicks = svgBarchart.select("#tags").selectAll(".tick")
 
+    // Update the y-axis ticks
     tagTicks.duration(transDuration)
         .attr("transform", function(data) {
             return `translate(0, ${newTagScale(data) + newTagScale.bandwidth() / 2})`;

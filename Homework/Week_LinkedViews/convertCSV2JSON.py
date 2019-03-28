@@ -1,5 +1,10 @@
 # Name: Michael Stroet
 # Student number: 11293284
+
+#
+# WILDCARD GEBRUIKT
+#
+
 """
 This script converts a csv file into a JSON file
 """
@@ -46,13 +51,15 @@ def get_tags(df):
 
 def make_tagdict(df, unique_tags):
     '''
-    Creates a dictionary of timestamps per tag
+    Creates a dictionary of timestamps and talk info per tag
     '''
 
+    # Create a dictionary with an empty list for each unique tag
     dict = {}
     for tag in unique_tags:
         dict[tag] = []
 
+    # Fill the dictionary with the timestamps and info per tag for each talk
     for talk in df.iterrows():
 
         index, values = talk
@@ -79,7 +86,7 @@ def preprocess_data(df):
     # get all unique tags from the dataframe as a list
     tags = get_tags(df)
 
-    # Creates a dictionary of timestamps per tag
+    # Creates a dictionary of timestamps and talk info per tag
     tag_dict = make_tagdict(df, tags)
 
     return tag_dict
@@ -87,7 +94,7 @@ def preprocess_data(df):
 
 def unix_to_date(timestamp):
     '''
-    Convert a unix timestamp to a date
+    Convert a unix timestamp to a date in %Y-%m-%d format
     '''
     return datetime.utcfromtimestamp(timestamp).strftime("%Y-%m-%d")
 
@@ -97,20 +104,17 @@ def prepare_data(data):
     Creates a dictionary for the amount of talks per tag (barchart)
     and for the amount of talks per day per tag (calendar)
     '''
+    # Empty dictionaries for the barchart data and the calendar data
     bar_dict = {}
     calendar_dict = {}
 
+    # Fill the bar and calendar dictionaries with the data
     for tag in data:
 
         talks = data[tag]
 
-        # Create a list with all timestamps of talks with this tag
-        timestamps = []
-        for talk in talks:
-            timestamps.append(talk[0])
-
         # Add the number of talks to the bar dictionary
-        bar_dict[tag] = len(timestamps)
+        bar_dict[tag] = len(talks)
 
         # Prepare a dictionary for the number of talks and their information per day
         days_dict = {}
@@ -120,6 +124,7 @@ def prepare_data(data):
 
             day = unix_to_date(timestamp)
 
+            # If this day is the first entry, create an innitial dict for this day, if not update the values
             if not day in days_dict:
                 days_dict[day] = {}
                 days_dict[day]["talks"] = 1

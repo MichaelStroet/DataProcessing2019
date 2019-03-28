@@ -1,7 +1,10 @@
 // Name: Michael Stroet
 // Student number: 11293284
 
-// http://bl.ocks.org/GuilloOme/75f51c64c2132899d58d4cd6a23506d3
+//
+// WILDCARD GEBRUIKT
+//
+
 function enterCalendar(dataset, firstYear, lastYear, colourInterpolator) {
     /*
     Draws an interactive calendar of the given data
@@ -10,6 +13,7 @@ function enterCalendar(dataset, firstYear, lastYear, colourInterpolator) {
     // Define the default tag
     var tag = "technology";
 
+    // Padding for the calendar view, with padding.bottom for each yearly calendar
     var padding = {
         top  : 120,
         left  : 50,
@@ -35,7 +39,7 @@ function enterCalendar(dataset, firstYear, lastYear, colourInterpolator) {
     // Select the tooltip div
     var tooltip = d3.select(".calTooltip");
 
-    // Draw title
+    // Draw the title
     svgCalendar.append("text")
         .attr("class", "title")
         .attr("x", svgWidth / 2 - 5)
@@ -43,7 +47,7 @@ function enterCalendar(dataset, firstYear, lastYear, colourInterpolator) {
         .attr("text-anchor", "middle")
         .text(`Het aantal TEDtalks met thema '${tag}' door de jaren heen`);
 
-
+    // Create a "g" for each calendar
     var cal = svgCalendar.selectAll("svg")
         .data(d3.range(firstYear, lastYear + 1))
         .enter()
@@ -55,6 +59,7 @@ function enterCalendar(dataset, firstYear, lastYear, colourInterpolator) {
         .attr("width", svgWidth)
         .attr("height", yearHeight)
 
+    // Add the year as text to the calendars
     cal.append("text")
         .attr("transform", `translate(${-2.5 * cellSize}, ${(yearHeight - padding.bottom) / 1.75})`)
         .style("text-anchor", "middle")
@@ -62,17 +67,21 @@ function enterCalendar(dataset, firstYear, lastYear, colourInterpolator) {
             return year;
         });
 
+    // Create a list of the number of talks in the dataset
     var talkAmounts = [];
     Object.values(dataset[tag]).forEach(function(talk){
         talkAmounts.push(talk["talks"]);
     });
 
+    // Determine the maximum amount of talks
     var legendMaxValue = d3.max(talkAmounts);
 
+    // Create a colour scale for the calendar and legenda
     var colourScale = d3.scaleSequential()
         .domain([legendMaxValue, 0])
         .interpolator(colourInterpolator);
 
+    // Picks a colour when given a number of talks or an undefined value
     var pickColour = function(data) {
         if (data == undefined || data == 0) {
             return "#ffffff";
@@ -83,6 +92,7 @@ function enterCalendar(dataset, firstYear, lastYear, colourInterpolator) {
         return colourScale(data["talks"]);
     };
 
+    // Dimensions and padding for the legend
     var legendWidth = svgWidth,
         legendHeight = padding.top,
         legendPadding = {
@@ -92,6 +102,7 @@ function enterCalendar(dataset, firstYear, lastYear, colourInterpolator) {
             left  : padding.left + 5
         };
 
+    // Dimensions for the gradient
     var gradientWidth = legendWidth - legendPadding.right - legendPadding.left;
     var gradientHeight = legendHeight - legendPadding.top - legendPadding.bottom;
 
@@ -100,11 +111,11 @@ function enterCalendar(dataset, firstYear, lastYear, colourInterpolator) {
             .range([0, gradientWidth - 1])
             .domain([0, legendMaxValue]);
 
-    // Append a defs (for definition) element to g
+    // Append a "defs" element to g
     var defs = svgCalendar.append("defs")
         .attr("class", "linearGradient");
 
-    //A ppend a linearGradient element to the defs and give it a unique id
+    // Add a linearGradient element to the defs
     var linearGradient = defs.append("linearGradient")
         .attr("id", "calendarGradient");
 
@@ -115,7 +126,7 @@ function enterCalendar(dataset, firstYear, lastYear, colourInterpolator) {
         .attr("x2", "100%")
         .attr("y2", "0%");
 
-    //Append multiple color stops by using D3's data/enter step
+    // Create a continuous color legend
     linearGradient.selectAll("stop")
         .data([
             {offset: "0%", color: `${pickColour(0)}`},
@@ -133,11 +144,13 @@ function enterCalendar(dataset, firstYear, lastYear, colourInterpolator) {
         .attr("offset", function(data) { return data.offset; })
         .attr("stop-color", function(data) { return data.color; });
 
+    // Define a "g" for the legend
     var legend = svgCalendar.append("g")
         .attr("class", "legend")
         .attr("width", legendWidth)
         .attr("height", legendHeight)
 
+    // Add the gradient to the legend
     legend.append("rect")
         .attr("x", legendPadding.left)
         .attr("y", legendPadding.top)
@@ -162,6 +175,7 @@ function enterCalendar(dataset, firstYear, lastYear, colourInterpolator) {
         .attr("text-anchor", "middle")
         .text("Talks gegeven per dag");
 
+    // Draw each day as a square in the calendar
     var rect = cal.selectAll(".day")
         .data(function(year) { return d3.timeDays(new Date(year, 0, 1), new Date(year + 1, 0, 1)); })
         .enter()
@@ -221,6 +235,7 @@ function enterCalendar(dataset, firstYear, lastYear, colourInterpolator) {
                 .style('opacity', 0);
         });
 
+    // Create an outline for each month in the calendar
     cal.selectAll(".month")
         .data(function(data) {
             return d3.timeMonths(new Date(data, 0, 1), new Date(data + 1, 0, 1));
@@ -233,8 +248,11 @@ function enterCalendar(dataset, firstYear, lastYear, colourInterpolator) {
         });
 };
 
-
 function getTalks(dataset, tag, date) {
+    /*
+    * Get the amount of talks from the dataset for a given tag and date
+    */
+
     var talks = dataset[tag][date];
     if (talks == undefined) {
         return 0;
@@ -242,10 +260,9 @@ function getTalks(dataset, tag, date) {
     return talks["talks"];
 };
 
-
 function monthPath(t0, cellSize) {
     /*
-
+    * Calculate the outline for a month and create a path string for it
     */
 
     var t1 = new Date(t0.getFullYear(), t0.getMonth() + 1, 0),
@@ -261,14 +278,17 @@ function monthPath(t0, cellSize) {
         + "H" + (w0 + 1) * cellSize + "Z";
 };
 
-
 function updateCalendar(dataset, newTag, firstYear, lastYear, colourInterpolator) {
+    /*
+    * Update the calendar for a new tag
+    */
 
     var transDuration = 500;
     var format = d3.timeFormat("%Y-%m-%d");
 
     var svgWidth = document.getElementById("calendar").clientWidth;
 
+    // Select the calendar svg
     var svgCalendar = d3.select("#svgCalendar").transition();
 
     svgCalendar.select(".title")
@@ -280,22 +300,26 @@ function updateCalendar(dataset, newTag, firstYear, lastYear, colourInterpolator
         talkAmounts.push(talk["talks"]);
     });
 
+    // Determine the maximum amount of talks
     var legendMaxValue = d3.max(talkAmounts);
 
+    // Create a new colour scale for the calendar and legenda
     var colourScale = d3.scaleSequential()
         .domain([legendMaxValue, 0])
         .interpolator(colourInterpolator);
-
-        var pickColour = function(data) {
-            if (data == undefined || data == 0) {
-                return "#ffffff";
-            };
-            if (typeof(data) == "number") {
-                return colourScale(data);
-            };
-            return colourScale(data["talks"]);
+        
+    // Picks a colour when given a number of talks or an undefined value
+    var pickColour = function(data) {
+        if (data == undefined || data == 0) {
+            return "#ffffff";
         };
+        if (typeof(data) == "number") {
+            return colourScale(data);
+        };
+        return colourScale(data["talks"]);
+    };
 
+    // Update each day for the new tag
     var rect = svgCalendar.selectAll(".day")
         .duration(transDuration)
         .attr("id", `${newTag}`)
@@ -303,13 +327,15 @@ function updateCalendar(dataset, newTag, firstYear, lastYear, colourInterpolator
             return pickColour(dataset[newTag][date]);
         });
 
+    // Padding for the calendar view, with padding.bottom for each yearly calendar
     var padding = {
         top  : 120,
         left  : 50,
-        right : 25 + 50,
+        right : 75,
         bottom: 10
     };
 
+    // Dimensions and padding for the legend
     var legendWidth = svgWidth,
         legendHeight = padding.top,
         legendPadding = {
@@ -319,6 +345,7 @@ function updateCalendar(dataset, newTag, firstYear, lastYear, colourInterpolator
             left  : padding.left + 5
         };
 
+    // Dimensions for the gradient
     var gradientWidth = legendWidth - legendPadding.right - legendPadding.left;
     var gradientHeight = legendHeight - legendPadding.top - legendPadding.bottom;
 
