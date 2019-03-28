@@ -199,23 +199,27 @@ function enterCalendar(dataset, firstYear, lastYear, colourInterpolator) {
             var divTalks = d3.select("#talks");
             divTalks.selectAll("#remove").remove();
 
-            var talks = dataset[d3.event.target.id][date]["info"];
-
             divTalks.append("p")
                 .attr("id", "remove")
                 .text(`${d3.event.target.id} - ${date}`);
 
-            var list = divTalks.append("p")
-                .attr("id", "remove");
+            var talksData = dataset[d3.event.target.id][date];
 
-            list.html("<hr>");
+            if (talksData != undefined) {
+                var talks = dataset[d3.event.target.id][date]["info"];
 
-            talks.forEach(function(talk) {
-                list.append("p")
-                    .text(talk[0] + '\n')
-                list.append("p")
-                    .html(`<a href = ${talk[2]} target="_blank">${talk[1]}</a><hr>`);
-            });
+                var list = divTalks.append("p")
+                    .attr("id", "remove");
+
+                list.html("<hr>");
+
+                talks.forEach(function(talk) {
+                    list.append("p")
+                        .text(talk[0] + '\n')
+                    list.append("p")
+                        .html(`<a href = ${talk[2]} target="_blank">${talk[1]}</a><hr>`);
+                });
+            };
         })
         .on("mousemove", function(date) {
             tooltip
@@ -307,7 +311,7 @@ function updateCalendar(dataset, newTag, firstYear, lastYear, colourInterpolator
     var colourScale = d3.scaleSequential()
         .domain([legendMaxValue, 0])
         .interpolator(colourInterpolator);
-        
+
     // Picks a colour when given a number of talks or an undefined value
     var pickColour = function(data) {
         if (data == undefined || data == 0) {

@@ -165,7 +165,6 @@ function barChart(datasets, firstYear, lastYear, colourInterpolator) {
             return xScale(data[1]);
         })
         .on("click", function(values) {
-            console.log(`Clicked on "${values[0]}", with ${values[1]} talks`);
             return updateCalendar(datasets["calendar"], values[0], firstYear, lastYear, colourInterpolator);
         })
         .on("mousemove", function(data) {
