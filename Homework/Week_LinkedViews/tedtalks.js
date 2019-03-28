@@ -26,52 +26,60 @@ window.onload = function() {
 
 function visualisationTedTalks(datasets) {
 
-    var totalWidth = 1100,
-        totalHeight = 4000;
+    var totalHeight = 5000;
+
+    var widthBarchart = document.getElementById("barchart").clientWidth;
+    var widthCalendar = document.getElementById("calendar").clientWidth;
 
     var body = d3.select("body")
-
-    var svg = body.append("svg")
-        .attr("width", totalWidth)
-        .attr("height", totalHeight)
-        .attr("class", "visualisation");
-
-    var barWidth = totalWidth / 2,
-        barHeight = totalHeight,
-        calWidth = totalWidth - barWidth;
-
-    // Define a "g" for the barchart
-    var gBar = svg.append("g")
-        .attr("class", "container")
-        .attr("id", "gBarchart")
-        .attr("transform", `translate(0, 0)`);
-
-    // Define a "svg" for the barchart
-    gBar.append("svg")
-        .attr("width", barWidth)
-        .attr("height", barHeight);
-
     // Define a "div" for the barchart tooltip
     body.append("div")
         .attr("class", "barTooltip")
         .style("opacity", 0);
-
-    // Define a "g" for the calendar view
-    svg.append("g")
-        .attr("class", "container")
-        .attr("id", "gCalendar")
-        .attr("transform", `translate(${barWidth}, 0)`);
 
     // Define a "div" for the calendar tooltip
     body.append("div")
         .attr("class", "calTooltip")
         .style("opacity", 0);
 
+    var svgBarchart = d3.select("#barchart")
+        .append("svg")
+        .attr("class", "container")
+        .attr("id", "svgBarchart")
+        .attr("width", widthBarchart)
+        .attr("height", totalHeight);
+
+    var svgCalendar = d3.select("#calendar")
+        .append("svg")
+        .attr("class", "container")
+        .attr("id", "svgCalendar")
+        .attr("width", widthCalendar)
+        .attr("height", totalHeight);
+
+    var divTalks = d3.select("#talks");
+
+    divTalks.append("p")
+        .text("Talks van de geselecteerde dag")
+
     var firstYear = 2000,
         lastYear = 2017;
     var colourInterpolator = d3.interpolateMagma
 
-    barChart(datasets, barWidth, barHeight, firstYear, lastYear, calWidth, colourInterpolator);
-    enterCalendar(datasets["calendar"], calWidth, firstYear, lastYear, colourInterpolator);
+    barChart(datasets, firstYear, lastYear, colourInterpolator);
+    enterCalendar(datasets["calendar"], firstYear, lastYear, colourInterpolator);
 
+};
+
+window.onresize = resize;
+
+//We will build a basic function to handle window resizing.
+function resize() {
+
+    var widthBarchart = document.getElementById("barchart").clientWidth;
+    var widthCalendar = document.getElementById("calendar").clientWidth;
+
+    d3.select("#svgBarchart")
+        .attr('width', widthBarchart);
+    d3.select("#svgCalendar")
+        .attr('width', widthCalendar);
 };

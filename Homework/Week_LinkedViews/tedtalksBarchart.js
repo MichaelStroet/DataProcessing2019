@@ -1,7 +1,7 @@
 // Name: Michael Stroet
 // Student number: 11293284
 
-function barChart(datasets, svgWidth, svgHeight, firstYear, lastYear, calWidth, colourInterpolator) {
+function barChart(datasets, firstYear, lastYear, colourInterpolator) {
     /*
     Draws an interactive barchart of the given data
     */
@@ -9,17 +9,20 @@ function barChart(datasets, svgWidth, svgHeight, firstYear, lastYear, calWidth, 
     // Dimensions for the scatterplot with padding on all sides
     var padding = {
         top: 120,
-        right: 0,
+        right: 0 + 50,
         bottom: 30,
-        left: 130
+        left: 180
     };
+
+    var svgWidth = document.getElementById("barchart").clientWidth;
+    var svgHeight = document.getElementById("barchart").clientHeight;
 
     var chartWidth = svgWidth - padding.left - padding.right;
     var chartHeight = svgHeight - padding.top - padding.bottom;
 
     var datasetBar = datasets["barchart"];
 
-    var orders = ["Descending", "Ascending", "Alphabetical"],
+    var orders = ["Afnemend", "Toenemend", "Alfabetisch"],
         orderedTags = {};
 
     // Create a dropdown
@@ -73,17 +76,14 @@ function barChart(datasets, svgWidth, svgHeight, firstYear, lastYear, calWidth, 
     };
     orderedTags[orders[2]] = alphabeticalTags;
 
-    // Select the "g" of the barchart
-    var g = d3.select("#gBarchart");
-
-    // Select the "svg" for drawing the figure
-    var svg = g.select("svg")
+    // Select the "svg" for the barchart
+    var svgBarchart = d3.select("#svgBarchart")
 
     // Select ther "div" for the tooltip
     var tooltip = d3.select(".barTooltip");
 
     // Define a "g" for the barchart
-    var barChart = svg.append("g")
+    var barChart = svgBarchart.append("g")
         .attr("class", "barchart")
         .attr("transform", `translate(${padding.left}, ${padding.top})`);
 
@@ -103,12 +103,12 @@ function barChart(datasets, svgWidth, svgHeight, firstYear, lastYear, calWidth, 
         .attr("class", "axis");
 
     // Draw x label
-    svg.append("text")
+    svgBarchart.append("text")
         .attr("class", "label")
         .attr("x", chartWidth / 2 + padding.left)
         .attr("y", padding.top / 1.5)
         .attr("text-anchor", "middle")
-        .text("X label");
+        .text("Talks gegeven per thema");
 
     // Draw vertical gridlines
     barChart.append("g")
@@ -125,12 +125,12 @@ function barChart(datasets, svgWidth, svgHeight, firstYear, lastYear, calWidth, 
         .attr("id", "tags");
 
     // Draw title
-    svg.append("text")
+    svgBarchart.append("text")
         .attr("class", "title")
         .attr("x", chartWidth / 2 + padding.left)
         .attr("y", padding.top / 4)
         .attr("text-anchor", "middle")
-        .text("Title");
+        .text("Het gebruik van thema's in TEDtalks");
 
     // Draw bars with tooltips of their value when mousing over them
     var bars = barChart.selectAll(".bar")
@@ -150,7 +150,7 @@ function barChart(datasets, svgWidth, svgHeight, firstYear, lastYear, calWidth, 
         })
         .on("click", function(values) {
             console.log(`Clicked on "${values[0]}", with ${values[1]} talks`);
-            return updateCalendar(datasets["calendar"], values[0], firstYear, lastYear, calWidth, colourInterpolator);
+            return updateCalendar(datasets["calendar"], values[0], firstYear, lastYear, colourInterpolator);
         })
         .on("mousemove", function(data) {
             tooltip
@@ -172,12 +172,12 @@ function barChart(datasets, svgWidth, svgHeight, firstYear, lastYear, calWidth, 
     // Run update function when dropdown selection changes
  	orderMenu.on("change", function(){
 
- 		// Find which fruit was selected from the dropdown
+ 		// Find which order was selected from the dropdown
  		var order = d3.select(this)
             .select("select")
             .property("value")
 
-        // Run update function with the selected fruit
+        // Run update function
         updateBarchart(datasetBar, order, orderedTags, chartHeight)
     });
 
@@ -187,20 +187,21 @@ function updateBarchart(datasetBar, order, orderedTags, chartHeight) {
 
     var transDuration = 500;
 
-    var g = d3.select("#gBarchart").transition();
+    // Select the "svg" for the barchart
+    var svgBarchart = d3.select("#svgBarchart").transition();
 
     var newTagScale = d3.scaleBand()
         .range([0, chartHeight])
         .domain(orderedTags[order])
 
-    g.selectAll(".bar")
+    svgBarchart.selectAll(".bar")
         .duration(transDuration)
         .attr("y", function(data) {
             return newTagScale(data[0]);
         });
 
     // Draw y-axis
-    var tagTicks = g.select("#tags").selectAll(".tick")
+    var tagTicks = svgBarchart.select("#tags").selectAll(".tick")
 
     tagTicks.duration(transDuration)
         .attr("transform", function(data) {

@@ -2,7 +2,7 @@
 // Student number: 11293284
 
 // http://bl.ocks.org/GuilloOme/75f51c64c2132899d58d4cd6a23506d3
-function enterCalendar(dataset, calWidth, firstYear, lastYear, colourInterpolator) {
+function enterCalendar(dataset, firstYear, lastYear, colourInterpolator) {
     /*
     Draws an interactive calendar of the given data
     */
@@ -12,8 +12,8 @@ function enterCalendar(dataset, calWidth, firstYear, lastYear, colourInterpolato
 
     var padding = {
         top  : 120,
-        left  : 60,
-        right : 20,
+        left  : 50,
+        right : 75,
         bottom: 10
     };
 
@@ -21,26 +21,30 @@ function enterCalendar(dataset, calWidth, firstYear, lastYear, colourInterpolato
     var daysPerWeek = 7,
         weeksPerYear = 53;
 
-    var cellSize = (calWidth - (padding.left + padding.right)) / weeksPerYear;
+    var svgWidth = document.getElementById("calendar").clientWidth;
+    var svgHeight = document.getElementById("calendar").clientHeight;
+
+    var cellSize = (svgWidth - (padding.left + padding.right)) / weeksPerYear;
     var yearHeight = cellSize * daysPerWeek + padding.bottom;
 
     var format = d3.timeFormat("%Y-%m-%d");
 
-    // Select g of the calendar view
-    var g = d3.select("#gCalendar")
+    // Select calendar svg
+    var svgCalendar = d3.select("#svgCalendar")
 
     // Select the tooltip div
     var tooltip = d3.select(".calTooltip");
 
     // Draw title
-    g.append("text")
+    svgCalendar.append("text")
         .attr("class", "title")
-        .attr("x", calWidth / 2)
+        .attr("x", svgWidth / 2 - 5)
         .attr("y", padding.top / 4)
         .attr("text-anchor", "middle")
-        .text(`Calendar title {${tag}}`);
+        .text(`Het aantal TEDtalks met thema '${tag}' door de jaren heen`);
 
-    var cal = g.selectAll("svg")
+
+    var cal = svgCalendar.selectAll("svg")
         .data(d3.range(firstYear, lastYear + 1))
         .enter()
         .append("g")
@@ -48,11 +52,11 @@ function enterCalendar(dataset, calWidth, firstYear, lastYear, colourInterpolato
         .attr("transform", function(data) {
             return `translate(${padding.left}, ${(lastYear - data) * yearHeight + padding.top})`;
         })
-        .attr("width", calWidth)
+        .attr("width", svgWidth)
         .attr("height", yearHeight)
 
     cal.append("text")
-        .attr("transform", `translate(${-2 * cellSize}, ${(yearHeight - padding.bottom) / 2})`)
+        .attr("transform", `translate(${-2.5 * cellSize}, ${(yearHeight - padding.bottom) / 1.75})`)
         .style("text-anchor", "middle")
         .text(function(year) {
             return year;
@@ -79,7 +83,7 @@ function enterCalendar(dataset, calWidth, firstYear, lastYear, colourInterpolato
         return colourScale(data["talks"]);
     };
 
-    var legendWidth = calWidth,
+    var legendWidth = svgWidth,
         legendHeight = padding.top,
         legendPadding = {
             top   : padding.top / 1.5,
@@ -97,7 +101,7 @@ function enterCalendar(dataset, calWidth, firstYear, lastYear, colourInterpolato
             .domain([0, legendMaxValue]);
 
     // Append a defs (for definition) element to g
-    var defs = g.append("defs")
+    var defs = svgCalendar.append("defs")
         .attr("class", "linearGradient");
 
     //A ppend a linearGradient element to the defs and give it a unique id
@@ -129,7 +133,7 @@ function enterCalendar(dataset, calWidth, firstYear, lastYear, colourInterpolato
         .attr("offset", function(data) { return data.offset; })
         .attr("stop-color", function(data) { return data.color; });
 
-    var legend = g.append("g")
+    var legend = svgCalendar.append("g")
         .attr("class", "legend")
         .attr("width", legendWidth)
         .attr("height", legendHeight)
@@ -156,7 +160,7 @@ function enterCalendar(dataset, calWidth, firstYear, lastYear, colourInterpolato
         .attr("x", legendWidth / 2)
         .attr("y", legendPadding.top / 1.2)
         .attr("text-anchor", "middle")
-        .text("Talks given per day");
+        .text("Talks gegeven per dag");
 
     var rect = cal.selectAll(".day")
         .data(function(year) { return d3.timeDays(new Date(year, 0, 1), new Date(year + 1, 0, 1)); })
@@ -177,18 +181,27 @@ function enterCalendar(dataset, calWidth, firstYear, lastYear, colourInterpolato
         .attr("fill", function(date) {
             return pickColour(dataset[tag][date]);
         })
-
         .on("click", function(date) {
-            console.log(`Clicked on "${date}", with ${getTalks(dataset, d3.event.target.id, date)} talks`);
-            var thing = dataset[d3.event.target.id][date]["info"]
-            var txt = ""
-            thing.forEach(function(bit) {
-                txt += bit + "\n"
+            var divTalks = d3.select("#talks");
+            divTalks.selectAll("#remove").remove();
+
+            var talks = dataset[d3.event.target.id][date]["info"];
+
+            divTalks.append("p")
+                .attr("id", "remove")
+                .text(`${d3.event.target.id} - ${date}`);
+
+            var list = divTalks.append("p")
+                .attr("id", "remove");
+
+            list.html("<hr>");
+
+            talks.forEach(function(talk) {
+                list.append("p")
+                    .text(talk[0] + '\n')
+                list.append("p")
+                    .html(`<a href = ${talk[2]} target="_blank">${talk[1]}</a><hr>`);
             });
-
-            console.log(txt)
-            window.alert(txt);
-
         })
         .on("mousemove", function(date) {
             tooltip
@@ -249,16 +262,18 @@ function monthPath(t0, cellSize) {
 };
 
 
-function updateCalendar(dataset, newTag, firstYear, lastYear, calWidth, colourInterpolator) {
+function updateCalendar(dataset, newTag, firstYear, lastYear, colourInterpolator) {
 
     var transDuration = 500;
     var format = d3.timeFormat("%Y-%m-%d");
 
-    var g = d3.select("#gCalendar").transition();
+    var svgWidth = document.getElementById("calendar").clientWidth;
 
-    g.select(".title")
+    var svgCalendar = d3.select("#svgCalendar").transition();
+
+    svgCalendar.select(".title")
         .duration(transDuration)
-        .text(`Calendar title {${newTag}}`);
+        .text(`Het aantal TEDtalks met thema '${newTag}' door de jaren heen`);
 
     var talkAmounts = [];
     Object.values(dataset[newTag]).forEach(function(talk){
@@ -281,7 +296,7 @@ function updateCalendar(dataset, newTag, firstYear, lastYear, calWidth, colourIn
             return colourScale(data["talks"]);
         };
 
-    var rect = g.selectAll(".day")
+    var rect = svgCalendar.selectAll(".day")
         .duration(transDuration)
         .attr("id", `${newTag}`)
         .attr("fill", function(date) {
@@ -290,12 +305,12 @@ function updateCalendar(dataset, newTag, firstYear, lastYear, calWidth, colourIn
 
     var padding = {
         top  : 120,
-        left  : 60,
-        right : 20,
+        left  : 50,
+        right : 25 + 50,
         bottom: 10
     };
 
-    var legendWidth = calWidth,
+    var legendWidth = svgWidth,
         legendHeight = padding.top,
         legendPadding = {
             top   : padding.top / 1.5,
@@ -313,7 +328,7 @@ function updateCalendar(dataset, newTag, firstYear, lastYear, calWidth, colourIn
         .domain([0, legendMaxValue]);
 
     // Draw x-axis
-    g.select("#legendAxis")
+    svgCalendar.select("#legendAxis")
         .duration(transDuration)
         .call(d3.axisBottom(legendScale)
             .ticks(legendMaxValue)

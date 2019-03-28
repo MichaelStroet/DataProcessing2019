@@ -6,30 +6,59 @@
 <html>
 
     <head>
+        <!-- Required meta tags -->
         <meta charset="utf-8">
-        <title>TEDtalks</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
+        <title>TEDtalks overzicht</title>
+
+        <!-- Bootstrap -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+        <!-- D3 v5 (local) -->
         <script type="text/javascript" src="d3/d3.v5.min.js"></script>
-        <link rel="stylesheet" href="tedtalks.css">
+
+        <!-- Visualisation (local) -->
         <script type="text/javascript" src="tedtalksBarchart.js"></script>
         <script type="text/javascript" src="tedtalksCalendar.js"></script>
         <script type="text/javascript" src="tedtalks.js"></script>
+        <link rel="stylesheet" href="tedtalks.css">
 
 
     </head>
 
     <body>
-        <h1>DataProcessing2019 - Linked Views</h1>
-        <h4>Michael Stroet 11293284</h4>
-        <hr>
+        <div class = "container-fluid" id = "pageHeader">
+            <div class = "page-header">
+                <h1>DataProcessing2019 <small>Linked Views</small></h1>
+                <h4><small>Michael Stroet 11293284</small></h4>
+                <hr>
+            </div>
+        </div>
 
-        <h2>Overzicht van TED talks vanaf het jaar 2000 (WIP)</h2>
-        <p>
-            Wat TED is, hoeveel er zijn, verschillende soorten conferenties (normaal, global, TEDx)
-            Onderwerpen van globale problemen tot entertainment en cabaret. Elk jaar meer en meer
-            Met zoveel talks overzicht handig, zit er talk bij die u interesseert?
-        </p>
-        <div id="orderDropdown"></div>
+        <div class = "container-fluid" id = "introduction">
+            <h3>Overzicht van TEDtalks sinds het jaar 2000</h3>
+            <p>
+                Technology Entertainment Design (TED) begon als een jaarlijkse conferentie in de VS en staat. Sprekers van verschillende expertises kwamen vertellen over een idee waarvan zij vonden dat het het waard was om die te verpreiden, want het motto van TED is "Ideas worth spreading". Sinds de eerste conferentie in 1984 is TED klink gegroeid. Van één conferentie per jaar in de VS naar vrijwel elke dag ergens op de wereld één of meerdere onder de naam van onder andere: TEDx, TED-Ed of TEDGlobal.
+            </p>
+            <p>
+                TED sprekers bieden talloze verschillende onderwerpen aan. Met thema's variërende van globale onderwerpen als technologie, wetenschap of cultuur tot onderwerpen als de cello, <abbr title="Post-Traumatic Stress Disorder">PTSD</abbr> of dans, is er voor iedereen wel een interessante TEDtalk te vinden. Om een zoektocht naar een interessante TEDtalk te vergemakkelijken, is hieronder de verschillende thema's van de talks gevisualiseerd gebaseerd op hoeveel er van dat thema zijn gegeven. Daarnaast staat er een kalender van 2017 tot en met 2000 waarin de datum van de verschillende talks van een bepaald onderwerp worden weergegeven. Door links op een onderwerp te klikken veranderd de kalender naar dat specifieke onderwerp. Verder kan er ook een lijst van talks per dag per thema verkregen worden door op een specifieke dag te kliken. Deze lijst verschijnt rechts van de kalender.
+            </p>
+            <p></p>
+        </div>
+
+        <div class = "container-fluid" id="orderDropdown"></div>
+
+        <div class = "container-fluid">
+            <div class="row">
+                <div class="col-sm-5" id = "barchart"></div>
+                <div class="col-sm-5" id = "calendar"></div>
+                <div class="col-sm-2" id = "talks"></div>
+            </div>
+        </div>
     </body>
 
 </html>
