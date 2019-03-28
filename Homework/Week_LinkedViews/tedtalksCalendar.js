@@ -180,7 +180,7 @@ function enterCalendar(dataset, calWidth, firstYear, lastYear, colourInterpolato
 
         .on("click", function(date) {
             console.log(`Clicked on "${date}", with ${getTalks(dataset, d3.event.target.id, date)} talks`);
-            var thing = dataset[d3.event.target.id][date]["links"]
+            var thing = dataset[d3.event.target.id][date]["info"]
             var txt = ""
             thing.forEach(function(bit) {
                 txt += bit + "\n"
